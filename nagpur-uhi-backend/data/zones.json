@@ -1,0 +1,732 @@
+{
+ "type": "FeatureCollection",
+ "name": "nagpur_uhi_zones",
+ "crs": {
+  "type": "name",
+  "properties": {
+   "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+  }
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "id": "cbd",
+   "properties": {
+    "zone_id": "cbd",
+    "name": "Sitabuldi \u2013 Zero Mile (CBD)",
+    "short": "Sitabuldi",
+    "character": "Commercial core",
+    "population": 85000,
+    "lat": 21.146500000000003,
+    "lon": 79.0825
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.07,
+       21.158
+      ],
+      [
+       79.095,
+       21.158
+      ],
+      [
+       79.095,
+       21.135
+      ],
+      [
+       79.07,
+       21.135
+      ],
+      [
+       79.07,
+       21.158
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "oldcity",
+   "properties": {
+    "zone_id": "oldcity",
+    "name": "Itwari \u2013 Mahal (Old City)",
+    "short": "Itwari\u2013Mahal",
+    "character": "Dense old city",
+    "population": 240000,
+    "lat": 21.1525,
+    "lon": 79.1075
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.095,
+       21.165
+      ],
+      [
+       79.12,
+       21.165
+      ],
+      [
+       79.12,
+       21.14
+      ],
+      [
+       79.095,
+       21.14
+      ],
+      [
+       79.095,
+       21.165
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sadar",
+   "properties": {
+    "zone_id": "sadar",
+    "name": "Sadar \u2013 Civil Lines",
+    "short": "Sadar",
+    "character": "Administrative / cantonment",
+    "population": 120000,
+    "lat": 21.168,
+    "lon": 79.08
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.065,
+       21.178
+      ],
+      [
+       79.095,
+       21.178
+      ],
+      [
+       79.095,
+       21.158
+      ],
+      [
+       79.065,
+       21.158
+      ],
+      [
+       79.065,
+       21.178
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "dharampeth",
+   "properties": {
+    "zone_id": "dharampeth",
+    "name": "Dharampeth \u2013 Ramdaspeth",
+    "short": "Dharampeth",
+    "character": "Established residential",
+    "population": 95000,
+    "lat": 21.139999999999997,
+    "lon": 79.06
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.05,
+       21.15
+      ],
+      [
+       79.07,
+       21.15
+      ],
+      [
+       79.07,
+       21.13
+      ],
+      [
+       79.05,
+       21.13
+      ],
+      [
+       79.05,
+       21.15
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "seminary",
+   "properties": {
+    "zone_id": "seminary",
+    "name": "Seminary Hills \u2013 Futala",
+    "short": "Seminary Hills",
+    "character": "Forested hills + lakefront",
+    "population": 60000,
+    "lat": 21.1625,
+    "lon": 79.05250000000001
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.04,
+       21.175
+      ],
+      [
+       79.065,
+       21.175
+      ],
+      [
+       79.065,
+       21.15
+      ],
+      [
+       79.04,
+       21.15
+      ],
+      [
+       79.04,
+       21.175
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "ambazari",
+   "properties": {
+    "zone_id": "ambazari",
+    "name": "Ambazari \u2013 VNIT",
+    "short": "Ambazari",
+    "character": "Lake + institutional campus",
+    "population": 70000,
+    "lat": 21.1235,
+    "lon": 79.04150000000001
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.028,
+       21.135
+      ],
+      [
+       79.055,
+       21.135
+      ],
+      [
+       79.055,
+       21.112
+      ],
+      [
+       79.028,
+       21.112
+      ],
+      [
+       79.028,
+       21.135
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "pratapnagar",
+   "properties": {
+    "zone_id": "pratapnagar",
+    "name": "Pratap Nagar \u2013 Khamla",
+    "short": "Pratap Nagar",
+    "character": "Mid-density residential",
+    "population": 130000,
+    "lat": 21.1175,
+    "lon": 79.0675
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.055,
+       21.13
+      ],
+      [
+       79.08,
+       21.13
+      ],
+      [
+       79.08,
+       21.105
+      ],
+      [
+       79.055,
+       21.105
+      ],
+      [
+       79.055,
+       21.13
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "manishnagar",
+   "properties": {
+    "zone_id": "manishnagar",
+    "name": "Manish Nagar \u2013 Somalwada",
+    "short": "Manish Nagar",
+    "character": "Rapid apartment growth",
+    "population": 110000,
+    "lat": 21.0925,
+    "lon": 79.07499999999999
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.062,
+       21.105
+      ],
+      [
+       79.088,
+       21.105
+      ],
+      [
+       79.088,
+       21.08
+      ],
+      [
+       79.062,
+       21.08
+      ],
+      [
+       79.062,
+       21.105
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "besa",
+   "properties": {
+    "zone_id": "besa",
+    "name": "Besa \u2013 Beltarodi",
+    "short": "Besa",
+    "character": "Peri-urban boom",
+    "population": 95000,
+    "lat": 21.064999999999998,
+    "lon": 79.085
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.07,
+       21.08
+      ],
+      [
+       79.1,
+       21.08
+      ],
+      [
+       79.1,
+       21.05
+      ],
+      [
+       79.07,
+       21.05
+      ],
+      [
+       79.07,
+       21.08
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "mihan",
+   "properties": {
+    "zone_id": "mihan",
+    "name": "MIHAN \u2013 Jamtha",
+    "short": "MIHAN",
+    "character": "SEZ / industrial",
+    "population": 40000,
+    "lat": 21.045,
+    "lon": 79.03999999999999
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.01,
+       21.065
+      ],
+      [
+       79.07,
+       21.065
+      ],
+      [
+       79.07,
+       21.025
+      ],
+      [
+       79.01,
+       21.025
+      ],
+      [
+       79.01,
+       21.065
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "airport",
+   "properties": {
+    "zone_id": "airport",
+    "name": "Airport \u2013 Sonegaon",
+    "short": "Airport",
+    "character": "Airport + logistics",
+    "population": 55000,
+    "lat": 21.093,
+    "lon": 79.04849999999999
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.035,
+       21.108
+      ],
+      [
+       79.062,
+       21.108
+      ],
+      [
+       79.062,
+       21.078
+      ],
+      [
+       79.035,
+       21.078
+      ],
+      [
+       79.035,
+       21.108
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "nandanvan",
+   "properties": {
+    "zone_id": "nandanvan",
+    "name": "Nandanvan \u2013 Sakkardara",
+    "short": "Nandanvan",
+    "character": "Dense east residential",
+    "population": 180000,
+    "lat": 21.127499999999998,
+    "lon": 79.11
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.095,
+       21.14
+      ],
+      [
+       79.125,
+       21.14
+      ],
+      [
+       79.125,
+       21.115
+      ],
+      [
+       79.095,
+       21.115
+      ],
+      [
+       79.095,
+       21.14
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "wathoda",
+   "properties": {
+    "zone_id": "wathoda",
+    "name": "Wathoda \u2013 Hudkeshwar",
+    "short": "Wathoda",
+    "character": "New layouts, ex-farmland",
+    "population": 120000,
+    "lat": 21.11,
+    "lon": 79.1425
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.125,
+       21.125
+      ],
+      [
+       79.16,
+       21.125
+      ],
+      [
+       79.16,
+       21.095
+      ],
+      [
+       79.125,
+       21.095
+      ],
+      [
+       79.125,
+       21.125
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "kalamna",
+   "properties": {
+    "zone_id": "kalamna",
+    "name": "Kalamna \u2013 Pardi",
+    "short": "Kalamna",
+    "character": "Market yard + logistics",
+    "population": 90000,
+    "lat": 21.165,
+    "lon": 79.1425
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.125,
+       21.18
+      ],
+      [
+       79.16,
+       21.18
+      ],
+      [
+       79.16,
+       21.15
+      ],
+      [
+       79.125,
+       21.15
+      ],
+      [
+       79.125,
+       21.18
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "jaripatka",
+   "properties": {
+    "zone_id": "jaripatka",
+    "name": "Jaripatka \u2013 Indora",
+    "short": "Jaripatka",
+    "character": "Dense north residential",
+    "population": 150000,
+    "lat": 21.1825,
+    "lon": 79.1
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.085,
+       21.195
+      ],
+      [
+       79.115,
+       21.195
+      ],
+      [
+       79.115,
+       21.17
+      ],
+      [
+       79.085,
+       21.17
+      ],
+      [
+       79.085,
+       21.195
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "gorewada",
+   "properties": {
+    "zone_id": "gorewada",
+    "name": "Gorewada \u2013 Koradi Rd",
+    "short": "Gorewada",
+    "character": "Reserve forest + new layouts",
+    "population": 45000,
+    "lat": 21.21,
+    "lon": 79.0475
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.02,
+       21.235
+      ],
+      [
+       79.075,
+       21.235
+      ],
+      [
+       79.075,
+       21.185
+      ],
+      [
+       79.02,
+       21.185
+      ],
+      [
+       79.02,
+       21.235
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "hingna",
+   "properties": {
+    "zone_id": "hingna",
+    "name": "Hingna MIDC \u2013 Wadi",
+    "short": "Hingna MIDC",
+    "character": "Industrial estate",
+    "population": 80000,
+    "lat": 21.115000000000002,
+    "lon": 78.97749999999999
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       78.955,
+       21.135
+      ],
+      [
+       79.0,
+       21.135
+      ],
+      [
+       79.0,
+       21.095
+      ],
+      [
+       78.955,
+       21.095
+      ],
+      [
+       78.955,
+       21.135
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "kamptee",
+   "properties": {
+    "zone_id": "kamptee",
+    "name": "Kamptee Rd \u2013 Uppalwadi",
+    "short": "Kamptee Rd",
+    "character": "Highway corridor",
+    "population": 100000,
+    "lat": 21.194,
+    "lon": 79.12
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       79.1,
+       21.21
+      ],
+      [
+       79.14,
+       21.21
+      ],
+      [
+       79.14,
+       21.178
+      ],
+      [
+       79.1,
+       21.178
+      ],
+      [
+       79.1,
+       21.21
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

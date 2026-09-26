@@ -1,0 +1,10 @@
+node_modules
+dist
+*.local
+
+# Python pipeline — generated data & caches
+python/data/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env.local

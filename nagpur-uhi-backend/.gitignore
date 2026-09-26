@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+uhi.db
+logs/
+data/satellite_imagery/**/*.tif
+data/satellite_imagery/**/metadata.json
+data/models/*.pkl
+data/models/model_metadata.json
+data/raw/
+.pytest_cache/

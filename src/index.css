@@ -1,0 +1,355 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: #e2e8f0;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* subtle grid backdrop */
+.app-bg {
+  background-color: #020617; /* dark pages keep their own surface over the white body */
+  background-image:
+    radial-gradient(1200px 600px at 80% -10%, rgba(249, 115, 22, 0.12), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(16, 185, 129, 0.1), transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: auto, auto, 32px 32px, 32px 32px;
+}
+
+/* range inputs */
+.range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  outline: none;
+}
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #0f172a;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+}
+.range-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #0f172a;
+  cursor: pointer;
+}
+
+/* scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+}
+
+/* leaflet tweaks */
+.leaflet-container {
+  background: #020617;
+  font-family: inherit;
+}
+.leaflet-control-attribution {
+  background: rgba(2, 6, 23, 0.7) !important;
+  color: #94a3b8 !important;
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a {
+  color: #cbd5e1 !important;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #0f172a;
+  color: #e2e8f0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.leaflet-popup-content {
+  margin: 10px 12px;
+  font-size: 12px;
+}
+.leaflet-bar a {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+.raster-overlay {
+  image-rendering: auto;
+}
+.zone-label {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.pulse-ring {
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+
+/* print layout — reports */
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff !important; color: #111 !important; }
+  .app-bg { background: #fff !important; }
+  main { padding: 0 !important; }
+  section, .rounded-2xl { break-inside: avoid; }
+  * { box-shadow: none !important; }
+}
+
+/* Dedicated scientific-report print layout. Only the report modal is printed. */
+@page {
+  size: A4 portrait;
+  margin: 15mm 14mm 17mm;
+  @bottom-right { content: counter(page) " / " counter(pages); color: #64748b; font-size: 8pt; }
+}
+@media print {
+  html:has(body.uhi-report-print-mode),
+  body.uhi-report-print-mode,
+  body.uhi-report-print-mode #root { height: auto !important; min-height: 0 !important; overflow: visible !important; background: #fff !important; }
+  body.uhi-report-print-mode * { visibility: hidden !important; }
+  body.uhi-report-print-mode .uhi-report-modal,
+  body.uhi-report-print-mode .uhi-report-modal * { visibility: visible !important; }
+  body.uhi-report-print-mode .uhi-report-modal {
+    position: absolute !important; inset: 0 auto auto 0 !important; z-index: 99999 !important;
+    width: 100% !important; height: auto !important; overflow: visible !important;
+    margin: 0 !important; padding: 0 !important; background: #fff !important;
+  }
+  body.uhi-report-print-mode .uhi-report-sheet {
+    width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important;
+    border: 0 !important; background: #fff !important; color: #1e293b !important;
+  }
+  body.uhi-report-print-mode .uhi-report-page-start { break-before: page; page-break-before: always; }
+  body.uhi-report-print-mode .uhi-report-figure { break-inside: avoid; page-break-inside: avoid; }
+  body.uhi-report-print-mode .uhi-report-section { break-inside: auto; page-break-inside: auto; }
+  body.uhi-report-print-mode .uhi-report-table { width: 100% !important; table-layout: fixed !important; font-size: 8pt !important; }
+  body.uhi-report-print-mode .uhi-report-table thead { display: table-header-group; }
+  body.uhi-report-print-mode .uhi-report-table tr { break-inside: avoid; page-break-inside: avoid; }
+  body.uhi-report-print-mode .uhi-report-figure img { max-height: 105mm !important; object-fit: contain !important; }
+  body.uhi-report-print-mode .recharts-wrapper { max-width: 100% !important; }
+  body.uhi-report-print-mode .recharts-surface { overflow: visible !important; }
+  body.uhi-report-print-mode figure { margin: 0 !important; }
+  body.uhi-report-print-mode p, body.uhi-report-print-mode li { color: #334155 !important; }
+  body.uhi-report-print-mode h1, body.uhi-report-print-mode h2, body.uhi-report-print-mode h3 { color: #142c48 !important; }
+}
+
+/* ==========================================================================
+   Light scientific theme — applied by `.uhi-light` on the app root for the
+   Home, Analysis/Explore, Planning and Insights views. Other pages keep their treatment.
+   Unlayered rules beat Tailwind's layered utilities, so these stay stable.
+   ========================================================================== */
+.uhi-light {
+  color: #0f172a;
+  color-scheme: light;
+}
+
+/* ---- surfaces: cards & glass panels → white / translucent white ---- */
+.uhi-light .bg-slate-950\/85 { background-color: rgba(255, 255, 255, 0.84); }
+.uhi-light .bg-slate-950\/80 { background-color: rgba(255, 255, 255, 0.88); }
+.uhi-light .bg-slate-950\/70 { background-color: rgba(255, 255, 255, 0.94); }
+.uhi-light .bg-slate-950\/60 { background-color: rgba(255, 255, 255, 0.96); }
+.uhi-light .bg-slate-950\/40 { background-color: rgba(255, 255, 255, 0.97); }
+.uhi-light .bg-slate-950\/50 { background-color: rgba(255, 255, 255, 0.96); }
+.uhi-light .bg-slate-950 { background-color: #ffffff; }
+.uhi-light .bg-slate-900\/70, .uhi-light .bg-slate-900\/60, .uhi-light .bg-slate-900 { background-color: #ffffff; }
+.uhi-light .bg-slate-800 { background-color: #f1f5f9; }
+
+/* ---- translucent white fills → light slate fills (visible on white) ---- */
+.uhi-light .bg-white\/3 { background-color: rgba(15, 23, 42, 0.03); }
+.uhi-light .bg-white\/4 { background-color: rgba(15, 23, 42, 0.04); }
+.uhi-light .bg-white\/5 { background-color: rgba(15, 23, 42, 0.05); }
+.uhi-light .bg-white\/8 { background-color: rgba(15, 23, 42, 0.06); }
+.uhi-light .bg-white\/10 { background-color: rgba(15, 23, 42, 0.08); }
+.uhi-light .bg-white\/15 { background-color: rgba(15, 23, 42, 0.12); }
+.uhi-light .bg-white\/30 { background-color: rgba(15, 23, 42, 0.22); }
+.uhi-light .hover\:bg-white\/5:hover { background-color: rgba(15, 23, 42, 0.05); }
+.uhi-light .hover\:bg-white\/10:hover { background-color: rgba(15, 23, 42, 0.09); }
+.uhi-light .hover\:text-white:hover { color: #0f172a; }
+.uhi-light .hover\:bg-white\/15:hover { background-color: rgba(15, 23, 42, 0.13); }
+
+/* ---- borders & dividers ---- */
+.uhi-light .border-white\/5, .uhi-light .border-white\/6, .uhi-light .border-white\/8,
+.uhi-light .border-white\/10, .uhi-light .border-white\/15 { border-color: #e2e8f0; }
+.uhi-light .border-white\/30 { border-color: rgba(203, 213, 225, 0.9); }
+.uhi-light .divide-white\/5 > * { border-color: #eef2f7; }
+
+/* ---- text: charcoal primary, medium-gray secondary, deeper accents ---- */
+.uhi-light .text-white { color: #0f172a; }
+.uhi-light .text-slate-100 { color: #0f172a; }
+.uhi-light .text-slate-200 { color: #1e293b; }
+.uhi-light .text-slate-300 { color: #334155; }
+.uhi-light .text-slate-400 { color: #64748b; }
+.uhi-light .text-slate-500 { color: #7c8799; }
+.uhi-light .text-slate-600 { color: #94a3b8; }
+.uhi-light .text-orange-200, .uhi-light .text-orange-300 { color: #c2410c; }
+.uhi-light .text-orange-400 { color: #ea580c; }
+.uhi-light .text-emerald-100 { color: #065f46; }
+.uhi-light .text-emerald-200, .uhi-light .text-emerald-300 { color: #047857; }
+.uhi-light .text-emerald-400 { color: #059669; }
+.uhi-light .text-sky-200, .uhi-light .text-sky-300 { color: #0369a1; }
+.uhi-light .text-sky-400 { color: #0284c7; }
+.uhi-light .text-fuchsia-200, .uhi-light .text-fuchsia-300 { color: #a21caf; }
+.uhi-light .text-fuchsia-400 { color: #9333ea; }
+.uhi-light .text-red-100 { color: #991b1b; }
+.uhi-light .text-red-200, .uhi-light .text-red-300 { color: #b91c1c; }
+.uhi-light .text-red-200\/80, .uhi-light .text-red-200\/60 { color: rgba(185, 28, 28, 0.9); }
+.uhi-light .text-amber-100 { color: #92400e; }
+.uhi-light .text-amber-200, .uhi-light .text-amber-300 { color: #b45309; }
+.uhi-light .text-amber-200\/90 { color: rgba(180, 83, 9, 0.92); }
+.uhi-light .text-violet-200, .uhi-light .text-violet-300 { color: #6d28d9; }
+.uhi-light .text-pink-300 { color: #be185d; }
+
+/* keep white text where the fill itself carries the contrast */
+.uhi-light .bg-orange-500.text-white, .uhi-light .bg-emerald-500.text-white,
+.uhi-light .bg-red-500.text-white, .uhi-light .bg-sky-500.text-white,
+.uhi-light .bg-slate-900.text-white, .uhi-light .bg-slate-800.text-white,
+.uhi-light .bg-black\/70.text-white, .uhi-light .bg-black\/60.text-white,
+.uhi-light .bg-black\/60 .text-slate-100, .uhi-light .bg-black\/70 .text-white,
+.uhi-light .bg-black\/60.text-slate-100, .uhi-light .bg-black\/70 .text-slate-100 { color: #f8fafc; }
+
+/* primary white buttons get a hairline so they read on white */
+.uhi-light button.bg-white, .uhi-light a.bg-white { box-shadow: inset 0 0 0 1px #cbd5e1; }
+
+/* neutral KPI gradient (dark slate) → flat light surface */
+.uhi-light [class*="from-slate-800"] { background-image: none !important; background-color: #f8fafc !important; }
+
+/* ---- Leaflet: readable labels, light attribution keeping CARTO / OSM ---- */
+.uhi-light .leaflet-popup-content-wrapper, .uhi-light .leaflet-popup-tip { background: #ffffff; color: #0f172a; }
+.uhi-light .zone-label { color: #0f172a; text-shadow: 0 0 3px #ffffff, 0 0 6px #ffffff, 0 1px 2px #ffffff; }
+.uhi-light .leaflet-bar a { background: #ffffff; color: #0f172a; border-color: #e2e8f0; }
+.uhi-light .leaflet-bar a:hover { background: #f1f5f9; color: #0f172a; }
+.uhi-light .leaflet-control-attribution { background: rgba(255, 255, 255, 0.88); color: #64748b; }
+.uhi-light .leaflet-control-attribution a { color: #475569; }
+
+/* ---- formula chips: light surface with readable mono text ---- */
+.uhi-light .bg-black\/40 { background-color: #eef2f7; }
+.uhi-light code.bg-black\/40 { color: #17365d; }
+
+/* ---- Methods & Validation: vertical stage rail connecting the sections ---- */
+.uhi-method-body > section {
+  position: relative;
+  margin-left: 1rem;
+  border-left: 2px solid #e2e8f0;
+  padding-left: 1.5rem;
+  padding-bottom: 3.25rem;
+}
+@media (min-width: 640px) {
+  .uhi-method-body > section { margin-left: 1.25rem; padding-left: 1.75rem; }
+}
+.uhi-method-body > section:last-child { border-left-color: transparent; padding-bottom: 0.75rem; }
+
+/* ---- Recharts: hairline grid, light tooltip ---- */
+.uhi-light .recharts-cartesian-grid line, .uhi-light .recharts-cartesian-grid path { stroke: #eaeff5; }
+.uhi-light .recharts-default-tooltip {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10) !important;
+  border-radius: 10px !important;
+  color: #0f172a !important;
+}
+/* ========== LIGHT THEME OVERRIDES FOR HOME PAGE ========== */
+
+.uhi-light {
+  background: #ffffff;
+}
+
+.uhi-light .bg-slate-950\/85,
+.uhi-light .bg-slate-950\/80,
+.uhi-light .bg-slate-950\/70,
+.uhi-light .bg-slate-950\/60,
+.uhi-light .bg-slate-950\/40,
+.uhi-light .bg-slate-950\/50,
+.uhi-light .bg-slate-950 { 
+  background-color: #ffffff; 
+}
+
+.uhi-light .bg-slate-900\/70,
+.uhi-light .bg-slate-900\/60,
+.uhi-light .bg-slate-900 { 
+  background-color: #ffffff; 
+}
+
+.uhi-light .bg-slate-800 { 
+  background-color: #f8fafc; 
+}
+
+.uhi-light .border-white\/8,
+.uhi-light .border-white\/10,
+.uhi-light .border-white\/15 { 
+  border-color: #e2e8f0; 
+}
+
+.uhi-light .text-white { 
+  color: #0f172a; 
+}
+
+.uhi-light .text-slate-100 { 
+  color: #0f172a; 
+}
+
+.uhi-light .text-slate-200 { 
+  color: #1e293b; 
+}
+
+.uhi-light .text-slate-300 { 
+  color: #334155; 
+}
+
+.uhi-light .text-slate-400 { 
+  color: #64748b; 
+}
+
+.uhi-light .hover\:bg-white\/5:hover { 
+  background-color: rgba(15, 23, 42, 0.05); 
+}
+
+.uhi-light .hover\:bg-white\/10:hover { 
+  background-color: rgba(15, 23, 42, 0.09); 
+}
+
+/* Card shadows for light theme */
+.uhi-light .shadow-\[0_1px_2px_rgba\(15\,23\,42\,0\.06\)\] {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Year buttons */
+.uhi-light .bg-slate-950\/60 {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.uhi-light .bg-white\/10 {
+  background-color: #f3f4f6;
+}

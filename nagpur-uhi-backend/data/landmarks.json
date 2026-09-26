@@ -1,0 +1,201 @@
+{
+ "type": "FeatureCollection",
+ "name": "nagpur_landmarks",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Zero Mile",
+    "category": "civic",
+    "kind": "city"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.0882,
+     21.1458
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Itwari",
+    "category": "civic",
+    "kind": "city"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.108,
+     21.153
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Ambazari Lake",
+    "category": "water body",
+    "kind": "water"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.043,
+     21.129
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Futala Lake",
+    "category": "water body",
+    "kind": "water"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.047,
+     21.158
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Seminary Hills",
+    "category": "green space",
+    "kind": "forest"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.061,
+     21.163
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Gorewada Reserve",
+    "category": "green space",
+    "kind": "forest"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.032,
+     21.205
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Airport",
+    "category": "transport",
+    "kind": "transport"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.049,
+     21.092
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MIHAN SEZ",
+    "category": "industrial",
+    "kind": "industry"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.03,
+     21.045
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Hingna MIDC",
+    "category": "industrial",
+    "kind": "industry"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     78.976,
+     21.108
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Koradi TPS",
+    "category": "industrial",
+    "kind": "industry"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.088,
+     21.246
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Besa",
+    "category": "growth corridor",
+    "kind": "growth"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.086,
+     21.064
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Wathoda",
+    "category": "growth corridor",
+    "kind": "growth"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.142,
+     21.112
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Manish Nagar",
+    "category": "growth corridor",
+    "kind": "growth"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     79.075,
+     21.09
+    ]
+   }
+  }
+ ]
+}
