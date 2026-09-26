@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceDot, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, ArrowRight, BrainCircuit, Building2, Download, HelpCircle, IndianRupee, Leaf, Minus, Plus, RotateCcw, Users } from "lucide-react";
+import {
+  AlertTriangle, ArrowRight, BrainCircuit, Building2, Clock, CloudSun, Download,
+  HelpCircle, IndianRupee, Leaf, Minus, Plus, RotateCcw, ThermometerSun, Users,
+} from "lucide-react";
 import { useApp } from "@/App";
 import RasterCanvas from "@/components/RasterCanvas";
 import { Card, Formula, Legend, Pill, Segmented, Slider, Stat, chartTheme } from "@/components/ui";
@@ -14,6 +17,13 @@ import type { ScenarioApiResponse } from "@/api/types";
 import { cn } from "@/utils/cn";
 
 const BUILDING_FOOTPRINT_KM2 = 0.0035; // ~3,500 m² per mid-rise block incl. paved surrounds
+
+/**
+ * External interactive environmental simulation (supporting demonstration only).
+ * Single source of truth for the URL — do not duplicate elsewhere.
+ * This is NOT part of the UHI calculation pipeline.
+ */
+const EXTERNAL_ENV_SIM_URL = "https://farmview-3d.vercel.app/";
 
 const PRESETS = [
   { name: "Miyawaki drive", veg: 20, built: 0, desc: "Dense micro-forests on vacant plots" },
@@ -29,7 +39,6 @@ const FLOW = ["Choose area", "Set interventions", "View scenario", "Understand i
 function FlowSection({ step, title, question, children }: { step: string; title: string; question: string; children: ReactNode }) {
   return (
     <div>
-      {/* 4px orange left border + light background — matches GroupHeader on Explore / Analysis */}
       <div className="mb-3 rounded-r-lg border-l-4 border-[#FF6B35] bg-[#f9fafb] py-3 pr-4 pl-4">
         <div className="flex items-center gap-2.5">
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#FF6B35] text-[10px] font-bold text-white shadow-sm">
@@ -427,7 +436,7 @@ export default function ScenarioLab() {
                         <button onClick={() => stepBuildings(25)} className="rounded-lg border border-slate-200 bg-white py-1 text-[11px] text-slate-700 transition hover:bg-slate-100">+25</button>
                       </div>
                       <p className="mt-2 text-[10px] text-slate-500">
-                        Negative = demolition / de-paving. “Agar naye 5 buildings aaye toh?” → press +5.
+                        Negative = demolition / de-paving. "Agar naye 5 buildings aaye toh?" → press +5.
                       </p>
                     </div>
                   </div>
@@ -706,7 +715,6 @@ export default function ScenarioLab() {
         <div className="space-y-4 xl:col-span-4">
           <FlowSection step="4" title="Impact Analysis" question="What effect does it have?">
             <div data-tour="impact" className="space-y-4 scroll-mt-28">
-              {/* Main KPI card — clean white surface, orange LST number */}
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.06)]">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Predicted zone ΔLST</p>
                 <p className="mt-1 text-4xl font-bold tabular-nums tracking-tight text-[#FF6B35]">
@@ -719,7 +727,6 @@ export default function ScenarioLab() {
                   </Pill>
                 </div>
 
-                {/* ML callout — subtle violet tint with left accent */}
                 <div className="mt-3 rounded-xl border-l-4 border-violet-400 bg-violet-50 px-3 py-2">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="flex items-center gap-1.5 text-violet-800">
@@ -754,7 +761,6 @@ export default function ScenarioLab() {
                   </p>
                 )}
 
-                {/* Before → After strip */}
                 <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
                   <span className="text-slate-600">{fmt.temp(result.zoneBefore.lst)}</span>
                   <span className="text-slate-400">→</span>
@@ -835,6 +841,74 @@ export default function ScenarioLab() {
           </FlowSection>
         </div>
       </div>
+
+      {/* ================================================================= */}
+      {/* NEW SECTION · Interactive Environmental Simulation (supporting)  */}
+      {/* ================================================================= */}
+      <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.06)] sm:p-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          {/* left: copy */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+                <Leaf className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Supporting demonstration
+                </p>
+                <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+                  Interactive Environmental Simulation
+                </h2>
+              </div>
+            </div>
+
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-700">
+              Explore how vegetation, weather and time can influence environmental conditions through an interactive 3D simulation.
+            </p>
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-500">
+              Our satellite analysis helps us study urban heat and environmental changes across Nagpur over time. This interactive simulation provides another way to understand the concept by allowing environmental conditions to be changed and their effects to be observed visually.
+            </p>
+
+            {/* subtle theme hints — small chips, not cards */}
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                <Leaf className="h-3 w-3 text-emerald-600" /> Vegetation
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                <CloudSun className="h-3 w-3 text-sky-600" /> Weather
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                <ThermometerSun className="h-3 w-3 text-[#FF6B35]" /> Temperature
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                <Clock className="h-3 w-3 text-violet-600" /> Time of day
+              </span>
+            </div>
+          </div>
+
+          {/* right: CTA */}
+          <div className="shrink-0 lg:text-right">
+            <a
+              href={EXTERNAL_ENV_SIM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2 rounded-xl bg-[#FF6B35] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#e85a28]"
+            >
+              Explore 3D Simulation
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </a>
+            <p className="mt-1.5 text-center text-[10px] text-slate-400 lg:text-right">
+              Opens in a new tab
+            </p>
+          </div>
+        </div>
+
+        {/* disclaimer footer */}
+        <p className="mt-5 border-t border-slate-100 pt-3 text-[10px] leading-relaxed text-slate-400">
+          This simulation is an external supporting tool, not part of our UHI calculation pipeline. It is provided to illustrate environmental concepts and does not use the Nagpur satellite dataset or our ML models.
+        </p>
+      </section>
 
       <TourOverlay
         step={tourStep}
