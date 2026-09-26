@@ -21,16 +21,151 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     
     <title>Smart Geospatial Platform · Nagpur Urban Heat Intelligence</title>
+    
+    <style>
+      #install-prompt {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        padding: 20px;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        display: none;
+        animation: slideUp 0.3s ease-out;
+      }
+      
+      #install-prompt.show {
+        display: block;
+      }
+      
+      @keyframes slideUp {
+        from {
+          transform: translateY(100%);
+        }
+        to {
+          transform: translateY(0);
+        }
+      }
+      
+      .install-content {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      
+      .install-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 8px;
+      }
+      
+      .install-desc {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 16px;
+      }
+      
+      .install-buttons {
+        display: flex;
+        gap: 12px;
+      }
+      
+      .install-btn {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      
+      .install-btn.primary {
+        background: #FF6B35;
+        color: white;
+      }
+      
+      .install-btn.primary:hover {
+        background: #E55A2B;
+      }
+      
+      .install-btn.secondary {
+        background: #f1f5f9;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+      }
+      
+      .install-btn.secondary:hover {
+        background: #e2e8f0;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Install Prompt -->
+    <div id="install-prompt">
+      <div class="install-content">
+        <div class="install-title">📱 Install as App</div>
+        <div class="install-desc">Install Nagpur UHI Platform on your home screen for quick access and offline support.</div>
+        <div class="install-buttons">
+          <button class="install-btn primary" id="install-btn">Install</button>
+          <button class="install-btn secondary" id="dismiss-btn">Not now</button>
+        </div>
+      </div>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- PWA Service Worker Registration -->
+    <!-- PWA Service Worker Registration & Install Prompt -->
     <script>
+      let deferredPrompt;
+      const installPrompt = document.getElementById('install-prompt');
+      const installBtn = document.getElementById('install-btn');
+      const dismissBtn = document.getElementById('dismiss-btn');
+      
+      // Detect if app can be installed
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show prompt after 3 seconds
+        setTimeout(() => {
+          installPrompt.classList.add('show');
+        }, 3000);
+      });
+      
+      // Handle install button click
+      installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`User response to the install prompt: ${outcome}`);
+          deferredPrompt = null;
+          installPrompt.classList.remove('show');
+        }
+      });
+      
+      // Handle dismiss button click
+      dismissBtn.addEventListener('click', () => {
+        deferredPrompt = null;
+        installPrompt.classList.remove('show');
+      });
+      
+      // Register service worker
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       }
+      
+      // Hide prompt if already installed
+      window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        installPrompt.classList.remove('show');
+      });
     </script>
   </body>
 </html>
