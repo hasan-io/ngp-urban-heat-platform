@@ -27,15 +27,15 @@ export const RAMPS: Record<LayerKey, Ramp> = {
   ndvi: {
     domain: [-0.1, 0.8],
     stops: [
-      { t: 0, c: hex("#7c2d12") }, { t: 0.2, c: hex("#d6a35c") }, { t: 0.42, c: hex("#d9f99d") },
-      { t: 0.62, c: hex("#4ade80") }, { t: 0.82, c: hex("#15803d") }, { t: 1, c: hex("#052e16") },
+      { t: 0, c: hex("#7c2d12") }, { t: 0.18, c: hex("#b45309") }, { t: 0.35, c: hex("#a3e635") },
+      { t: 0.55, c: hex("#22c55e") }, { t: 0.78, c: hex("#15803d") }, { t: 1, c: hex("#052e16") },
     ],
     unit: "", label: "Vegetation Index (NDVI)", ticks: [-0.1, 0.2, 0.4, 0.6, 0.8],
   },
   ndbi: {
     domain: [-0.45, 0.5],
     stops: [
-      { t: 0, c: hex("#0f766e") }, { t: 0.3, c: hex("#a7f3d0") }, { t: 0.48, c: hex("#f1f5f9") },
+      { t: 0, c: hex("#0f766e") }, { t: 0.28, c: hex("#a7f3d0") }, { t: 0.48, c: hex("#f1f5f9") },
       { t: 0.68, c: hex("#fb923c") }, { t: 0.86, c: hex("#c026d3") }, { t: 1, c: hex("#4a044e") },
     ],
     unit: "", label: "Built-up Index (NDBI)", ticks: [-0.4, -0.2, 0, 0.2, 0.5],
@@ -55,9 +55,16 @@ export const RAMPS: Record<LayerKey, Ramp> = {
     stops: [{ t: 0, c: hex("#0e7490") }, { t: 0.5, c: hex("#f8fafc") }, { t: 1, c: hex("#7e22ce") }],
     unit: "", label: "Δ NDBI", ticks: [-0.3, -0.15, 0, 0.15, 0.3],
   },
+  // FIXED: persistence ramp no longer starts at #0f172a (dark slate).
+  // 0 yrs → cool pale blue, 6 yrs → deep risk red. Fits the light scientific theme.
   hotspot: {
     domain: [0, 6],
-    stops: [{ t: 0, c: hex("#0f172a") }, { t: 0.5, c: hex("#f59e0b") }, { t: 1, c: hex("#dc2626") }],
+    stops: [
+      { t: 0, c: hex("#e0ecff") },
+      { t: 0.35, c: hex("#fbbf24") },
+      { t: 0.7, c: hex("#f97316") },
+      { t: 1, c: hex("#b91c1c") },
+    ],
     unit: " yrs", label: "Hotspot persistence (years in top 10%)", ticks: [0, 2, 4, 6],
   },
   scenario: {
@@ -70,9 +77,9 @@ export const RAMPS: Record<LayerKey, Ramp> = {
   },
   cluster: {
     domain: [0, 12],
-    stops: [{ t: 0, c: hex("#0f172a") }, { t: 1, c: hex("#f8fafc") }],
+    stops: [{ t: 0, c: hex("#f1f5f9") }, { t: 1, c: hex("#0f172a") }],
     unit: "", label: "Cluster id", ticks: [0, 4, 8, 12],
-    palette: ["#0f172a", "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#a855f7", "#ec4899", "#f43f5e", "#84cc16", "#14b8a6", "#8b5cf6"],
+    palette: ["#f1f5f9", "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#a855f7", "#ec4899", "#f43f5e", "#84cc16", "#14b8a6", "#8b5cf6"],
   },
 };
 
@@ -103,7 +110,7 @@ export function rampGradient(key: LayerKey): string {
   return `linear-gradient(90deg, ${r.stops.map((s) => `${rgbCss(s.c)} ${(s.t * 100).toFixed(0)}%`).join(", ")})`;
 }
 
-/** Render a raster into ImageData. Water is painted a fixed dark blue unless the layer is a delta layer. */
+/** Render a raster into ImageData. Water is painted a fixed light-blue unless the layer is a delta layer. */
 export function rasterToImageData(
   ds: Dataset,
   values: Float32Array | Uint8Array,
@@ -113,7 +120,8 @@ export function rasterToImageData(
   const img = new ImageData(ds.w, ds.h);
   const d = img.data;
   const alpha = Math.round((opts.alpha ?? 1) * 255);
-  const waterColor = opts.waterColor === undefined ? hex("#0c2a4a") : opts.waterColor;
+  // Light scientific theme: water is a soft steel blue rather than near-black navy.
+  const waterColor = opts.waterColor === undefined ? hex("#bcd4e6") : opts.waterColor;
   for (let i = 0; i < ds.n; i++) {
     let c: RGB;
     if (ds.water[i] && waterColor) c = waterColor;
@@ -136,7 +144,7 @@ export function imageDataToDataUrl(img: ImageData): string {
 }
 
 export const METRIC_META: Record<Metric, { label: string; short: string; unit: string; color: string; decimals: number }> = {
-  lst: { label: "Land Surface Temperature", short: "LST", unit: "°C", color: "#f97316", decimals: 1 },
-  ndvi: { label: "Vegetation Index", short: "NDVI", unit: "", color: "#22c55e", decimals: 3 },
-  ndbi: { label: "Built-up Index", short: "NDBI", unit: "", color: "#c084fc", decimals: 3 },
+  lst: { label: "Land Surface Temperature", short: "LST", unit: "°C", color: "#FF6B35", decimals: 1 },
+  ndvi: { label: "Vegetation Index", short: "NDVI", unit: "", color: "#10B981", decimals: 3 },
+  ndbi: { label: "Built-up Index", short: "NDBI", unit: "", color: "#A78BFA", decimals: 3 },
 };

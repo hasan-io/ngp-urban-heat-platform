@@ -20,6 +20,8 @@ interface RasterCanvasProps {
   title?: string;
   alpha?: number;
   palette?: string[]; // categorical rendering (overrides the ramp)
+  /** Light scientific theme (defaults to true on Explore / Analysis). */
+  light?: boolean;
 }
 
 function project(lat: number, lon: number, w: number, h: number): [number, number] {
@@ -30,9 +32,19 @@ export function drawOverlays(
   ctx: CanvasRenderingContext2D,
   W: number,
   H: number,
-  opts: { showZones?: boolean; highlightZone?: number | null; selectedZones?: number[]; showLabels?: boolean; labelKinds?: string[]; marker?: [number, number] | null; scale: number; light?: boolean },
+  opts: {
+    showZones?: boolean;
+    highlightZone?: number | null;
+    selectedZones?: number[];
+    showLabels?: boolean;
+    labelKinds?: string[];
+    marker?: [number, number] | null;
+    scale: number;
+    light?: boolean;
+  },
 ) {
   const s = opts.scale;
+  const light = opts.light ?? true;
   if (opts.showZones) {
     ZONES.forEach((z, zi) => {
       const sel = opts.selectedZones?.indexOf(zi) ?? -1;
@@ -44,11 +56,24 @@ export function drawOverlays(
       });
       ctx.closePath();
       if (hl || sel >= 0) {
-        ctx.fillStyle = sel === 0 ? "rgba(56,189,248,0.18)" : sel === 1 ? "rgba(244,114,182,0.18)" : "rgba(255,255,255,0.12)";
+        // Zone A → orange (heat), Zone B → green (vegetation). Matches the panel below.
+        ctx.fillStyle = sel === 0
+          ? "rgba(255,107,53,0.16)"
+          : sel === 1
+            ? "rgba(16,185,129,0.16)"
+            : light
+              ? "rgba(15,23,42,0.08)"
+              : "rgba(255,255,255,0.12)";
         ctx.fill();
       }
-      ctx.lineWidth = (hl || sel >= 0 ? 2.2 : 0.8) * s;
-      ctx.strokeStyle = sel === 0 ? "#38bdf8" : sel === 1 ? "#f472b6" : hl ? (opts.light ? "#0f172a" : "#ffffff") : opts.light ? "rgba(15,23,42,0.5)" : "rgba(255,255,255,0.45)";
+      ctx.lineWidth = (hl || sel >= 0 ? 2.2 : 0.9) * s;
+      ctx.strokeStyle = sel === 0
+        ? "#FF6B35"
+        : sel === 1
+          ? "#10B981"
+          : hl
+            ? light ? "#0f172a" : "#ffffff"
+            : light ? "rgba(15,23,42,0.45)" : "rgba(255,255,255,0.45)";
       ctx.setLineDash(hl || sel >= 0 ? [] : [3 * s, 3 * s]);
       ctx.stroke();
       ctx.setLineDash([]);
@@ -60,17 +85,22 @@ export function drawOverlays(
     for (const lm of LANDMARKS) {
       if (opts.labelKinds && !opts.labelKinds.includes(lm.kind)) continue;
       const [x, y] = project(lm.lat, lm.lon, W, H);
-      ctx.fillStyle = opts.light ? "#0f172a" : "rgba(255,255,255,0.95)";
+      // Marker dot
+      ctx.fillStyle = light ? "#0f172a" : "rgba(255,255,255,0.95)";
       ctx.beginPath();
       ctx.arc(x, y, 2.2 * s, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = opts.light ? "rgba(255,255,255,0.95)" : "rgba(0,0,0,0.6)";
+      ctx.strokeStyle = light ? "rgba(255,255,255,0.95)" : "rgba(0,0,0,0.6)";
       ctx.lineWidth = 1 * s;
       ctx.stroke();
+      // Label pill (light: white bg + dark text; dark: near-black bg + light text)
       const tw = ctx.measureText(lm.name).width;
-      ctx.fillStyle = opts.light ? "rgba(255,255,255,0.84)" : "rgba(2,6,23,0.7)";
+      ctx.fillStyle = light ? "rgba(255,255,255,0.92)" : "rgba(2,6,23,0.72)";
       ctx.fillRect(x + 5 * s, y - 7 * s, tw + 6 * s, 14 * s);
-      ctx.fillStyle = opts.light ? "#0f172a" : "#f8fafc";
+      ctx.strokeStyle = light ? "rgba(15,23,42,0.18)" : "rgba(255,255,255,0.10)";
+      ctx.lineWidth = 0.8 * s;
+      ctx.strokeRect(x + 5 * s, y - 7 * s, tw + 6 * s, 14 * s);
+      ctx.fillStyle = light ? "#0f172a" : "#f8fafc";
       ctx.fillText(lm.name, x + 8 * s, y);
     }
   }
@@ -78,18 +108,18 @@ export function drawOverlays(
     const [x, y] = project(opts.marker[0], opts.marker[1], W, H);
     ctx.beginPath();
     ctx.arc(x, y, 6 * s, 0, Math.PI * 2);
-    ctx.strokeStyle = opts.light ? "#0f172a" : "#fff";
+    ctx.strokeStyle = light ? "#0f172a" : "#fff";
     ctx.lineWidth = 2 * s;
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(x, y, 2 * s, 0, Math.PI * 2);
-    ctx.fillStyle = opts.light ? "#0f172a" : "#fff";
+    ctx.fillStyle = light ? "#0f172a" : "#fff";
     ctx.fill();
   }
 }
 
 export default function RasterCanvas(props: RasterCanvasProps) {
-  const { values, layer, className, showZones, highlightZone, selectedZones, showLabels, labelKinds, dimOutside, marker, onClick, alpha } = props;
+  const { values, layer, className, showZones, highlightZone, selectedZones, showLabels, labelKinds, dimOutside, marker, onClick, alpha, light = true } = props;
   const ds: Dataset = useMemo(() => getDataset(), []);
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -122,21 +152,27 @@ export default function RasterCanvas(props: RasterCanvasProps) {
       const ctx = canvas.getContext("2d")!;
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
-      ctx.fillStyle = "#020617";
+      // Light scientific theme: paper-white backdrop instead of near-black.
+      ctx.fillStyle = light ? "#ffffff" : "#020617";
       ctx.fillRect(0, 0, W, H);
       ctx.drawImage(offscreen, 0, 0, W, H);
-      drawOverlays(ctx, W, H, { showZones, highlightZone, selectedZones, showLabels, labelKinds, marker, scale: dpr * (rect.width / 520) * 0.9 + 0.4 });
+      drawOverlays(ctx, W, H, { showZones, highlightZone, selectedZones, showLabels, labelKinds, marker, scale: dpr * (rect.width / 520) * 0.9 + 0.4, light });
     };
     draw();
     const ro = new ResizeObserver(draw);
     ro.observe(wrap);
     return () => ro.disconnect();
-  }, [offscreen, showZones, highlightZone, selectedZones, showLabels, labelKinds, marker]);
+  }, [offscreen, showZones, highlightZone, selectedZones, showLabels, labelKinds, marker, light]);
 
   return (
     <div
       ref={wrapRef}
-      className={cn("relative aspect-[7/6] w-full overflow-hidden rounded-xl border border-white/10 bg-slate-950", onClick && "cursor-crosshair", className)}
+      className={cn(
+        "relative aspect-[7/6] w-full overflow-hidden rounded-xl border",
+        light ? "border-slate-200 bg-white" : "border-white/10 bg-slate-950",
+        onClick && "cursor-crosshair",
+        className,
+      )}
       onClick={(e) => {
         if (!onClick) return;
         const rect = e.currentTarget.getBoundingClientRect();
@@ -150,7 +186,16 @@ export default function RasterCanvas(props: RasterCanvasProps) {
       }}
     >
       <canvas ref={canvasRef} className="h-full w-full" />
-      {props.title && <span className="absolute left-2 top-2 rounded-md bg-black/60 px-2 py-0.5 text-[11px] font-medium text-slate-100">{props.title}</span>}
+      {props.title && (
+        <span
+          className={cn(
+            "absolute left-2 top-2 rounded-md px-2 py-0.5 text-[11px] font-medium",
+            light ? "border border-slate-200 bg-white/95 text-slate-800" : "bg-black/60 text-slate-100",
+          )}
+        >
+          {props.title}
+        </span>
+      )}
     </div>
   );
 }
