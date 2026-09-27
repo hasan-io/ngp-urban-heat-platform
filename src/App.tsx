@@ -9,6 +9,7 @@ import Overview from "@/views/Overview";
 import ScenarioLab from "@/views/ScenarioLab";
 import Explore from "@/views/Explore";
 import Insights from "@/views/Insights";
+import HardwareSimulation from "@/views/HardwareSimulation";
 import type { AreaKey } from "@/data/boundaries";
 import { getDistrictDataset } from "@/data/districts";
 
@@ -18,7 +19,7 @@ export type UhiLayer = "lst" | "ndvi" | "ndbi" | "dlst" | "hotspot" | "islands" 
 export type Basemap = "dark" | "streets" | "satellite";
 export type InspectMode = "zones" | "inspect";
 export interface InspectedPixel { cell: number; lat: number; lon: number }
-export type ViewKey = "home" | "explore" | "planning" | "insights" | "methodology";
+export type ViewKey = "home" | "explore" | "planning" | "hardware" | "insights" | "methodology";
 
 export interface DataSourceState {
   status: "demo" | "loading" | "live" | "error";
@@ -111,8 +112,6 @@ export default function App() {
   const [vegetationChange, setVegetationChange] = useState(20);
   const [builtUpChange, setBuiltUpChange] = useState(0);
 
-  // For non-Nagpur areas, swap to a district-specific synthetic dataset.
-  // Nagpur continues to use whatever the live/demo data source provides.
   const activeDs = useMemo(() => {
     if (selectedArea === "nagpur") return ds;
     return getDistrictDataset(selectedArea) ?? ds;
@@ -186,6 +185,7 @@ export default function App() {
                 {view === "home" && <Overview />}
                 {view === "explore" && <Explore />}
                 {view === "planning" && <ScenarioLab />}
+                {view === "hardware" && <HardwareSimulation />}
                 {view === "insights" && <Insights />}
                 {view === "methodology" && <Methodology />}
               </Suspense>

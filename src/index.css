@@ -353,3 +353,45 @@ body {
 .uhi-light .bg-white\/10 {
   background-color: #f3f4f6;
 }
+/* ==========================================================================
+   Hardware simulation — small animation primitives
+   ========================================================================== */
+
+@keyframes sensorPulse {
+  0%   { opacity: 0.65; }
+  70%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+.sensor-pulse-critical {
+  animation: sensorPulse 1.6s ease-out infinite;
+  transform-origin: center;
+}
+.sensor-pulse-warning {
+  animation: sensorPulse 2.4s ease-out infinite;
+  transform-origin: center;
+}
+
+@keyframes liveDot {
+  0%   { opacity: 1;   transform: scale(1);   }
+  50%  { opacity: 0.4; transform: scale(1.4); }
+  100% { opacity: 1;   transform: scale(1);   }
+}
+.live-dot {
+  animation: liveDot 1.4s ease-in-out infinite;
+}
+
+@keyframes alertEnter {
+  0%   { opacity: 0; transform: scale(0.94); }
+  100% { opacity: 1; transform: scale(1);    }
+}
+.alert-overlay-enter {
+  animation: alertEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes backdropEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.alert-backdrop-enter {
+  animation: backdropEnter 0.2s ease-out;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, BookOpen, CheckCircle2, ChevronDown, ClipboardList, Compass, Database, Download, FileJson, FileSpreadsheet, FlaskConical, HelpCircle, Home, Loader2, Map as MapIcon, Plug, Printer, RefreshCw, X } from "lucide-react";
+import { Activity, AlertTriangle, BookOpen, CheckCircle2, ChevronDown, ClipboardList, Compass, Database, Download, FileJson, FileSpreadsheet, FlaskConical, HelpCircle, Home, Loader2, Map as MapIcon, Plug, Printer, RefreshCw, X } from "lucide-react";
 import { useApp, type ViewKey } from "@/App";
 import { exportAnalysisJson, exportZonesCsv, exportZonesGeoJson } from "@/data/decision";
 import { probeService, type ServiceInfo } from "@/data/live";
@@ -11,6 +11,7 @@ const NAV: { key: ViewKey; label: string; icon: typeof Home }[] = [
   { key: "home", label: "Home", icon: Home },
   { key: "explore", label: "Analysis / Explore", icon: Compass },
   { key: "planning", label: "Scenario Lab", icon: FlaskConical },
+  { key: "hardware", label: "Monitoring", icon: Activity },
   { key: "insights", label: "Insights & Reports", icon: ClipboardList },
   { key: "methodology", label: "Methods & Validation", icon: BookOpen },
 ];
