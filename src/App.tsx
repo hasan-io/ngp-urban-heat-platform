@@ -9,6 +9,8 @@ import Overview from "@/views/Overview";
 import ScenarioLab from "@/views/ScenarioLab";
 import Explore from "@/views/Explore";
 import Insights from "@/views/Insights";
+import type { AreaKey } from "@/data/boundaries";
+import { getDistrictDataset } from "@/data/districts";
 
 const Methodology = lazy(() => import("@/views/Methodology"));
 
@@ -31,6 +33,8 @@ interface AppState {
   year: Year;
   setYear: (y: Year) => void;
   ds: Dataset;
+  selectedArea: AreaKey;
+  setSelectedArea: (a: AreaKey) => void;
   selectedLayer: UhiLayer;
   setSelectedLayer: (v: UhiLayer) => void;
   selectedBasemap: Basemap;
@@ -88,8 +92,9 @@ export default function App() {
   });
   const [ds, setDs] = useState<Dataset>(() => getDataset());
   const [dataSource, setDataSource] = useState<DataSourceState>({ status: "demo", baseUrl: localStorage.getItem(LS_KEY) ?? "" });
+  const [selectedArea, setSelectedArea] = useState<AreaKey>("nagpur");
   const [selectedLayer, setSelectedLayer] = useState<UhiLayer>("lst");
-  const [selectedBasemap, setSelectedBasemap] = useState<Basemap>("streets"); // CARTO Voyager
+  const [selectedBasemap, setSelectedBasemap] = useState<Basemap>("streets");
   const [opacity, setOpacity] = useState(0.72);
   const [showZones, setShowZones] = useState(true);
   const [showLandmarks, setShowLandmarks] = useState(true);
@@ -105,6 +110,13 @@ export default function App() {
   const [scenarioBaseline, setScenarioBaseline] = useState<"2024" | "2030">("2024");
   const [vegetationChange, setVegetationChange] = useState(20);
   const [builtUpChange, setBuiltUpChange] = useState(0);
+
+  // For non-Nagpur areas, swap to a district-specific synthetic dataset.
+  // Nagpur continues to use whatever the live/demo data source provides.
+  const activeDs = useMemo(() => {
+    if (selectedArea === "nagpur") return ds;
+    return getDistrictDataset(selectedArea) ?? ds;
+  }, [selectedArea, ds]);
 
   const connectLive = useCallback(async (baseUrl: string) => {
     const base = normalizeBaseUrl(baseUrl);
@@ -125,7 +137,6 @@ export default function App() {
     setDataSource({ status: "demo", baseUrl: "" });
   }, []);
 
-  // Reconnect silently to a previously used service; fall back to the demonstration data on failure.
   useEffect(() => {
     const saved = localStorage.getItem(LS_KEY);
     if (saved) void connectLive(saved).catch(() => undefined);
@@ -136,22 +147,28 @@ export default function App() {
   }, [year]);
 
   const state = useMemo<AppState>(() => ({
-    view, setView, year, setYear, ds,
+    view, setView, year, setYear,
+    ds: activeDs,
+    selectedArea, setSelectedArea,
     selectedLayer, setSelectedLayer, selectedBasemap, setSelectedBasemap, opacity, setOpacity,
     showZones, setShowZones, showLandmarks, setShowLandmarks, showZoneLabels, setShowZoneLabels,
     selectedZoneA, setSelectedZoneA, selectedZoneB, setSelectedZoneB, inspectMode, setInspectMode,
     inspectedPixel, setInspectedPixel, view3d, setView3d, playing, setPlaying, playbackRate, setPlaybackRate,
     scenarioZoneId, setScenarioZoneId, scenarioBaseline, setScenarioBaseline, vegetationChange, setVegetationChange, builtUpChange, setBuiltUpChange,
     dataSource, connectLive, useDemo,
-  }), [view, year, ds, selectedLayer, selectedBasemap, opacity, showZones, showLandmarks, showZoneLabels, selectedZoneA, selectedZoneB, inspectMode, inspectedPixel, view3d, playing, playbackRate, scenarioZoneId, scenarioBaseline, vegetationChange, builtUpChange, dataSource, connectLive, useDemo]);
+  }), [
+    view, year, activeDs, selectedArea,
+    selectedLayer, selectedBasemap, opacity, showZones, showLandmarks, showZoneLabels,
+    selectedZoneA, selectedZoneB, inspectMode, inspectedPixel, view3d, playing, playbackRate,
+    scenarioZoneId, scenarioBaseline, vegetationChange, builtUpChange, dataSource, connectLive, useDemo,
+  ]);
 
   return (
     <Ctx.Provider value={state}>
-      <MLProvider key={ds.id} ds={ds} year={year}>
-        <div className={cn("flex h-full min-h-screen flex-col", view === "home" || view === "explore" || view === "planning" || view === "insights" || view === "methodology" ? "uhi-light bg-white" : "app-bg")}>
+      <MLProvider key={activeDs.id} ds={activeDs} year={year}>
+        <div className={cn("flex h-full min-h-screen flex-col", "uhi-light bg-white")}>
           <TopNav />
 
-          {/* Main */}
           <main className="flex min-w-0 flex-1 flex-col">
             {dataSource.status === "loading" && (
               <div className="no-print border-b border-emerald-400/20 bg-emerald-500/10 px-4 py-1.5 text-[11px] text-emerald-100 sm:px-6">
@@ -165,13 +182,13 @@ export default function App() {
               </div>
             )}
             <div className="flex-1">
-            <Suspense fallback={<div className="flex h-96 items-center justify-center text-sm text-slate-400">Loading…</div>}>
-              {view === "home" && <Overview />}
-              {view === "explore" && <Explore />}
-              {view === "planning" && <ScenarioLab />}
-              {view === "insights" && <Insights />}
-              {view === "methodology" && <Methodology />}
-            </Suspense>
+              <Suspense fallback={<div className="flex h-96 items-center justify-center text-sm text-slate-400">Loading…</div>}>
+                {view === "home" && <Overview />}
+                {view === "explore" && <Explore />}
+                {view === "planning" && <ScenarioLab />}
+                {view === "insights" && <Insights />}
+                {view === "methodology" && <Methodology />}
+              </Suspense>
             </div>
             {view === "insights" || view === "methodology" ? <Footer /> : null}
           </main>

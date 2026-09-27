@@ -1,11 +1,8 @@
 // Analytics engine: builds the Nagpur multi-temporal raster stack and derives
 // every statistic used by the platform (zonal stats, regression, hotspots, trends).
-// Rasters are procedurally generated from a physically-motivated land-cover model
-// calibrated to Nagpur's known geography (lakes, reserve forests, CBD, SEZ, growth corridors).
-
 import { fbm, hash2, valueNoise } from "./noise";
 import {
-  AIRPORT, BOUNDS, CITY_CENTER, CLASSES_NDVI, FORESTS, GRID, GROWTH_ZONES, INDUSTRIAL,
+  AIRPORT, BOUNDS, CELL_AREA_KM2, CITY_CENTER, CLASSES_NDVI, FORESTS, GRID, GROWTH_ZONES, INDUSTRIAL,
   KM_PER_DEG_LAT, KM_PER_DEG_LON, LAKES, LST_TREND_PER_YEAR, RIVERS, ROADS, URBAN_CORES, YEARS, YEAR_ANOMALY, ZONES,
   type Ellipse, type LatLon, type Year, type Zone,
 } from "./nagpur";
@@ -16,8 +13,8 @@ export interface YearRasters {
   ndvi: Float32Array;
   ndbi: Float32Array;
   lst: Float32Array;
-  veg: Float32Array; // vegetation cover fraction 0..1
-  built: Float32Array; // built-up fraction 0..1
+  veg: Float32Array;
+  built: Float32Array;
 }
 
 export interface Regression {
@@ -32,11 +29,7 @@ export interface Regression {
   n: number;
 }
 
-export interface Trend {
-  slope: number;
-  intercept: number;
-  r2: number;
-}
+export interface Trend { slope: number; intercept: number; r2: number }
 
 export interface CityStats {
   lstMean: number;
@@ -45,33 +38,21 @@ export interface CityStats {
   lstMin: number;
   ndviMean: number;
   ndbiMean: number;
-  hotAreaKm2: number; // LST > 42 °C
-  greenAreaKm2: number; // NDVI > 0.4
-  builtAreaKm2: number; // NDBI > 0.1
+  hotAreaKm2: number;
+  greenAreaKm2: number;
+  builtAreaKm2: number;
   classAreaKm2: Record<string, number>;
 }
 
 export interface ZoneYearStats {
-  lst: number;
-  ndvi: number;
-  ndbi: number;
-  veg: number;
-  built: number;
-  hotFrac: number; // share of cells in city-wide top 10% LST that year
+  lst: number; ndvi: number; ndbi: number; veg: number; built: number; hotFrac: number;
 }
 
 export interface ZoneStats {
-  zone: Zone;
-  index: number;
-  cells: number;
-  areaKm2: number;
+  zone: Zone; index: number; cells: number; areaKm2: number;
   byYear: Record<Year, ZoneYearStats>;
-  dLst: number;
-  dNdvi: number;
-  dNdbi: number;
-  lstSlope: number;
-  ndviSlope: number;
-  ndbiSlope: number;
+  dLst: number; dNdvi: number; dNdbi: number;
+  lstSlope: number; ndviSlope: number; ndbiSlope: number;
   persistentFrac: number;
   centroid: LatLon;
 }
@@ -81,12 +62,11 @@ export type DataSource = "demo" | "live";
 export interface DatasetMeta {
   baseUrl?: string;
   fetchedAt?: string;
-  serviceSource?: string; // e.g. "landsat+sentinel", "gee", "synthetic"
+  serviceSource?: string;
   gridResM?: number;
   note?: string;
 }
 
-/** Raw inputs to `buildDataset` — produced by the synthetic generator or by the live data service. */
 export interface DatasetInput {
   id: string;
   source: DataSource;
@@ -100,6 +80,8 @@ export interface DatasetInput {
   meta?: DatasetMeta;
   quality?: import("./catalog").YearQuality[];
   scenes?: import("./catalog").Scene[];
+  /** Optional override for cell area — required when the grid does not match BOUNDS. */
+  cellAreaKm2?: number;
 }
 
 export interface Dataset {
@@ -121,7 +103,7 @@ export interface Dataset {
   zoneIndex: Int16Array;
   zones: ZoneStats[];
   city: Record<Year, CityStats>;
-  hotCount: Uint8Array; // years (0..6) in which the cell was a top-10% hotspot
+  hotCount: Uint8Array;
   regression: Record<Year, Regression>;
   trends: { lst: Trend; ndvi: Trend; ndbi: Trend };
 }
@@ -198,7 +180,6 @@ export function cellAreaFor(w: number, h: number): number {
   return ((BOUNDS.east - BOUNDS.west) / w) * KM_PER_DEG_LON * (((BOUNDS.north - BOUNDS.south) / h) * KM_PER_DEG_LAT);
 }
 
-/** Vegetation / built-up cover fractions from the indices (inverse of the composite calibration). */
 export const coverFromIndices = (ndvi: number, ndbi: number): [number, number] => [
   Math.min(1, Math.max(0, (ndvi - 0.06) / 0.72)),
   Math.min(1, Math.max(0, (ndbi + 0.32) / 0.75)),
@@ -241,7 +222,6 @@ function fitRegression(lst: Float32Array, ndvi: Float32Array, ndbi: Float32Array
     const x1 = ndvi[i], x2 = ndbi[i], y = lst[i];
     n++; s1 += x1; s2 += x2; s11 += x1 * x1; s22 += x2 * x2; s12 += x1 * x2; sy += y; sy1 += x1 * y; sy2 += x2 * y; syy += y * y;
   }
-  // Solve normal equations [n s1 s2; s1 s11 s12; s2 s12 s22] * [a b1 b2] = [sy sy1 sy2]
   const M = [
     [n, s1, s2, sy],
     [s1, s11, s12, sy1],
@@ -288,7 +268,6 @@ function fitRegression(lst: Float32Array, ndvi: Float32Array, ndbi: Float32Array
 // ---------- dataset builder ----------
 let cached: Dataset | null = null;
 
-/** Demonstration cube: physically-motivated land-cover model calibrated to Nagpur's geography. */
 export function getDataset(): Dataset {
   if (cached) return cached;
   cached = buildDataset(generateSynthetic());
@@ -322,22 +301,18 @@ function generateSynthetic(): DatasetInput {
     lon[i] = lo;
     const [x, y] = toKm(la, lo);
 
-    // urban cores (union of gaussians)
     let c = 1;
     for (const e of URBAN_CORES) c *= 1 - (e.s ?? 1) * gauss(ellipseDist(x, y, e), 0.9);
     core[i] = 1 - c;
 
-    // forests
     let f = 0;
     for (const e of FORESTS) f = Math.max(f, (e.s ?? 1) * soft(ellipseDist(x, y, e) + 0.12 * valueNoise(x * 1.8, y * 1.8, 77), 0.72, 1.15));
     forest[i] = f;
 
-    // lakes (hard mask with wobbly shoreline)
     for (const e of LAKES) {
       if (ellipseDist(x, y, e) + 0.1 * valueNoise(x * 3, y * 3, 91) < 1) { water[i] = 1; break; }
     }
 
-    // industrial (static + growing parts) and extra heat
     let i0 = 0, i1 = 0, heat = 0;
     for (const e of INDUSTRIAL) {
       const m = (e.s ?? 1) * soft(ellipseDist(x, y, e), 0.6, 1.2);
@@ -352,7 +327,6 @@ function generateSynthetic(): DatasetInput {
 
     airport[i] = soft(ellipseDist(x, y, AIRPORT), 0.7, 1.1);
 
-    // road corridors
     let r = 0;
     for (const rd of ROADS) r = Math.max(r, rd.s * soft(polylineDist(x, y, rd.pts), rd.w * 0.5, rd.w * 2.2));
     road[i] = r;
@@ -361,7 +335,6 @@ function generateSynthetic(): DatasetInput {
     for (const rd of RIVERS) rv = Math.max(rv, rd.s * soft(polylineDist(x, y, rd.pts), rd.w * 0.4, rd.w * 2));
     river[i] = rv;
 
-    // growth zones: g(y) = g0 + g1 * t(y)
     let a0 = 0, a1 = 0;
     for (const e of GROWTH_ZONES) {
       const m = (e.s ?? 1) * gauss(ellipseDist(x, y, e), 1.1);
@@ -374,7 +347,6 @@ function generateSynthetic(): DatasetInput {
     nB[i] = fbm(x / 1.4, y / 1.4, 11, 4);
     nV[i] = fbm(x / 1.1, y / 1.1, 23, 4);
     nL[i] = fbm(x / 0.9, y / 0.9, 37, 4);
-
   }
 
   const rasters = {} as Record<Year, YearRasters>;
@@ -402,14 +374,12 @@ function generateSynthetic(): DatasetInput {
       let B = 1 - (1 - 0.86 * coreD) * (1 - 0.78 * ind) * (1 - 0.5 * road[i]) * (1 - 0.72 * g) * (1 - 0.7 * airport[i]) * 0.95;
       B = clamp(B * (1 - 0.92 * forest[i]) * (1 + 0.14 * nB[i]), 0, 1);
       let V = (0.3 + 0.62 * forest[i] + 0.12 * river[i] + 0.06 * nV[i]) * (1 - 0.88 * B) + an.ndvi * 1.3 + 0.02 * nY;
-      if (B > 0.3) V *= 1 - 0.012 * (y - 2019); // tree felling in urbanised areas
+      if (B > 0.3) V *= 1 - 0.012 * (y - 2019);
       V = clamp(V, 0, 1);
       veg[i] = V;
       built[i] = B;
       ndvi[i] = clamp(0.06 + 0.72 * V + 0.03 * nY, -0.05, 0.92);
       ndbi[i] = clamp(-0.32 + 0.75 * B + 0.12 * ind + 0.08 * airport[i] + 0.04 * nB[i] + 0.02 * nY, -0.5, 0.7);
-      // Non-linear surface energy balance: canopy cooling saturates with NDVI (Carlson & Ripley),
-      // impervious heating shows a threshold once NDBI exceeds ~0.15 (dense roofs / tarmac).
       const nd = Math.max(0, ndvi[i]);
       lst[i] =
         42.25 + 8.0 * ndbi[i] + 1.8 / (1 + Math.exp(-(ndbi[i] - 0.15) / 0.07)) - 10.5 * (1 - Math.exp(-2.0 * nd)) +
@@ -420,15 +390,14 @@ function generateSynthetic(): DatasetInput {
   }
   return {
     id: "demo", source: "demo", label: "Demonstration dataset", w, h, lat, lon, water, rasters,
-    meta: { serviceSource: "synthetic", gridResM: 200, note: "Model-generated pre-monsoon composites calibrated to Nagpur's geography (2019–2024)." },
+    meta: { serviceSource: "synthetic", gridResM: Math.round(Math.sqrt(CELL_AREA_KM2) * 1000), note: "Model-generated pre-monsoon composites calibrated to Nagpur's geography (2019–2024)." },
   };
 }
 
-/** Derive every statistic the platform needs from a raster stack (demo or live). */
 export function buildDataset(inp: DatasetInput): Dataset {
   const { w, h, lat, lon, water, rasters } = inp;
   const n = w * h;
-  const cellArea = cellAreaFor(w, h);
+  const cellArea = inp.cellAreaKm2 ?? cellAreaFor(w, h);
   const zoneIndex = new Int16Array(n).fill(-1);
   for (let i = 0; i < n; i++) {
     for (let z = 0; z < ZONES.length; z++) {
@@ -436,7 +405,6 @@ export function buildDataset(inp: DatasetInput): Dataset {
     }
   }
 
-  // city-wide stats and hotspot masks
   const city = {} as Record<Year, CityStats>;
   const hotCount = new Uint8Array(n);
   const landLst: Record<number, Float32Array> = {};
@@ -469,7 +437,6 @@ export function buildDataset(inp: DatasetInput): Dataset {
     };
   }
 
-  // zonal stats
   const zones: ZoneStats[] = ZONES.map((zone, zi) => {
     const idx: number[] = [];
     for (let i = 0; i < n; i++) if (zoneIndex[i] === zi) idx.push(i);
@@ -550,13 +517,13 @@ export function histogram(values: Float32Array, min: number, max: number, bins: 
 
 export interface ScenarioInput {
   zoneIndex: number;
-  vegDeltaPct: number; // percentage points of vegetation cover
-  builtDeltaPct: number; // percentage points of built-up cover
+  vegDeltaPct: number;
+  builtDeltaPct: number;
   baseline: "2024" | "2030";
 }
 
 export interface ScenarioResult {
-  lst: Float32Array; // full raster with scenario applied
+  lst: Float32Array;
   baseLst: Float32Array;
   zoneBefore: { lst: number; ndvi: number; ndbi: number; veg: number; built: number };
   zoneAfter: { lst: number; ndvi: number; ndbi: number; veg: number; built: number };
@@ -625,4 +592,3 @@ export const fmt = {
   km2: (v: number) => `${v.toFixed(1)} km²`,
   pct: (v: number, d = 0) => `${(v * 100).toFixed(d)}%`,
 };
-
