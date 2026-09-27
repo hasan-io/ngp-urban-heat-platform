@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import {
   ArrowDownToLine, ClipboardList, FileText, Info,
-  Lightbulb, Loader2, Printer, ShieldCheck, ThermometerSun, X,
+  Lightbulb, Loader2, Mic, Printer, ShieldCheck, ThermometerSun, X,
 } from "lucide-react";
 import { useApp } from "@/App";
 import GuidedTour, { type TourStep } from "@/components/GuidedTour";
@@ -22,6 +22,7 @@ import type { InsightsResponse, ReportResponse, ScatterResponse, TrendResponse, 
 import { cn } from "@/utils/cn";
 
 const TOUR_KEY = "nagpur-uhi.insights-tour-v1";
+const VOICE_MODULE_URL = "https://nagpur-netra-voice-module.vercel.app/";
 const INSIGHTS_TOUR: TourStep[] = [
   { target: "insights-findings", text: "Start with the key findings: a short reading of heat exposure, vegetation and built-up change for the selected season." },
   { target: "insights-rankings", text: "Compare priority zones by mean and peak temperature, persistence, area and severity." },
@@ -751,7 +752,6 @@ export default function Insights() {
 
   const finishTour = () => { localStorage.setItem(TOUR_KEY, "1"); setTourStep(null); };
 
-  /* Plan: recommendation priority → urgency accent */
   const priorityAccent = (p: string) =>
     p === "Immediate" ? "border-l-[#FF6B35]"
     : p === "Near term" ? "border-l-amber-500"
@@ -798,6 +798,31 @@ export default function Insights() {
           </button>
         </div>
       </header>
+
+      {/* ---------- voice assistant callout ---------- */}
+      <section>
+        <div className="flex flex-col gap-4 rounded-2xl border-2 border-[#FF6B35] bg-gradient-to-r from-orange-50 via-orange-50/40 to-white p-5 shadow-[0_2px_8px_rgba(255,107,53,0.10)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#FF6B35] text-white shadow-md">
+              <Mic className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-slate-900 sm:text-lg">Have any doubts? Ask here</h2>
+              <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:text-sm">
+                Tap and ask — get instant voice answers about Nagpur's heat data, hotspots and planning recommendations in your own language.
+              </p>
+            </div>
+          </div>
+          <a
+            href={VOICE_MODULE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#FF6B35] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#e85a28] hover:shadow-md"
+          >
+            <Mic className="h-4 w-4" /> Tap and Ask
+          </a>
+        </div>
+      </section>
 
       {/* ---------- findings ---------- */}
       <section data-tour="insights-findings" className="scroll-mt-24">
