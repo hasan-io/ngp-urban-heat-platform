@@ -3,22 +3,25 @@ import { Activity, AlertTriangle, BookOpen, CheckCircle2, ChevronDown, Clipboard
 import { useApp, type ViewKey } from "@/App";
 import { exportAnalysisJson, exportZonesCsv, exportZonesGeoJson } from "@/data/decision";
 import { probeService, type ServiceInfo } from "@/data/live";
+import { useI18n, type TranslationKey } from "@/i18n";
+import LanguageSelector from "@/components/LanguageSelector";
 import { cn } from "@/utils/cn";
 
 export const APP_VERSION = "1.2.0";
 
-const NAV: { key: ViewKey; label: string; icon: typeof Home }[] = [
-  { key: "home", label: "Home", icon: Home },
-  { key: "explore", label: "Analysis / Explore", icon: Compass },
-  { key: "planning", label: "Scenario Lab", icon: FlaskConical },
-  { key: "hardware", label: "Monitoring", icon: Activity },
-  { key: "insights", label: "Insights & Reports", icon: ClipboardList },
-  { key: "methodology", label: "Methods & Validation", icon: BookOpen },
+const NAV: { key: ViewKey; labelKey: TranslationKey; icon: typeof Home }[] = [
+  { key: "home", labelKey: "nav.home", icon: Home },
+  { key: "explore", labelKey: "nav.explore", icon: Compass },
+  { key: "planning", labelKey: "nav.planning", icon: FlaskConical },
+  { key: "hardware", labelKey: "nav.hardware", icon: Activity },
+  { key: "insights", labelKey: "nav.insights", icon: ClipboardList },
+  { key: "methodology", labelKey: "nav.methodology", icon: BookOpen },
 ];
 
 // ------------------------------------------------------------------ Data source badge
 export function DataSourceBadge({ onClick }: { onClick: () => void }) {
   const { ds, dataSource } = useApp();
+  const { t } = useI18n();
   const live = ds.source === "live";
   const busy = dataSource.status === "loading";
   return (
@@ -30,15 +33,15 @@ export function DataSourceBadge({ onClick }: { onClick: () => void }) {
           ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
           : "border-orange-300 bg-orange-50 text-[#C2410C] hover:bg-orange-100",
       )}
-      title="Data source settings"
+      title={t("common.dataSource")}
     >
       {busy ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
       ) : (
         <span className={cn("h-2 w-2 rounded-full", live ? "bg-emerald-500" : "bg-[#FF6B35]")} />
       )}
-      <span className="hidden sm:inline">{busy ? "Loading live data…" : live ? ds.label : "Demonstration dataset"}</span>
-      <span className="sm:hidden">{live ? "Live" : "Demo"}</span>
+      <span className="hidden sm:inline">{busy ? t("common.loadingLive") : live ? ds.label : t("common.demoData")}</span>
+      <span className="sm:hidden">{live ? t("common.liveData") : t("common.demoData")}</span>
       <ChevronDown className="h-3 w-3 opacity-60" />
     </button>
   );
@@ -47,6 +50,7 @@ export function DataSourceBadge({ onClick }: { onClick: () => void }) {
 // ------------------------------------------------------------------ Data source dialog
 export function DataSourceDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { ds, dataSource, connectLive, useDemo } = useApp();
+  const { t } = useI18n();
   const [url, setUrl] = useState(dataSource.baseUrl || "http://localhost:8000");
   const [probe, setProbe] = useState<{ state: "idle" | "testing" | "ok" | "fail"; info?: ServiceInfo; error?: string }>({ state: "idle" });
   useEffect(() => { if (open) setProbe({ state: "idle" }); }, [open]);
@@ -64,7 +68,7 @@ export function DataSourceDialog({ open, onClose }: { open: boolean; onClose: ()
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <div className="flex items-center gap-2">
             <Database className="h-4 w-4 text-[#FF6B35]" />
-            <h3 className="text-sm font-semibold text-slate-900">Data source</h3>
+            <h3 className="text-sm font-semibold text-slate-900">{t("common.dataSource")}</h3>
           </div>
           <button onClick={onClose} className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-900">
             <X className="h-4 w-4" />
@@ -168,6 +172,7 @@ export function DataSourceDialog({ open, onClose }: { open: boolean; onClose: ()
 // ------------------------------------------------------------------ Export menu
 export function ExportMenu() {
   const { ds } = useApp();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -188,7 +193,7 @@ export function ExportMenu() {
         className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
       >
         <Download className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Export</span>
+        <span className="hidden sm:inline">{t("common.export")}</span>
         <ChevronDown className="h-3 w-3 opacity-60" />
       </button>
       {open && (
@@ -215,6 +220,7 @@ export function ExportMenu() {
 // ------------------------------------------------------------------ Header + top nav
 export function TopNav() {
   const { view, setView } = useApp();
+  const { t } = useI18n();
   const [dlg, setDlg] = useState(false);
   return (
     <div className="uhi-light">
@@ -242,21 +248,22 @@ export function TopNav() {
                   )}
                 >
                   <Icon className={cn("h-4 w-4", active ? "text-white" : "text-slate-400")} />
-                  {item.label}
+                  {t(item.labelKey)}
                 </button>
               );
             })}
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
+            <LanguageSelector />
             <DataSourceBadge onClick={() => setDlg(true)} />
             <ExportMenu />
             <button
               onClick={() => setView("methodology")}
               className="hidden items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 md:flex"
-              title="Methods & validation"
+              title={t("common.methods")}
             >
-              <HelpCircle className="h-3.5 w-3.5" /> Methods
+              <HelpCircle className="h-3.5 w-3.5" /> {t("common.methods")}
             </button>
           </div>
         </div>

@@ -6,10 +6,12 @@ import { Card, KPI, Legend, Pill, YearPicker } from "@/components/ui";
 import { fmt } from "@/data/engine";
 import { uhiApi } from "@/api/client";
 import type { HotspotRanking, OverviewResponse } from "@/api/types";
+import { useI18n } from "@/i18n";
 import { cn } from "@/utils/cn";
 
 export default function Overview() {
   const { ds, year, setYear, setView, setSelectedLayer, setScenarioZoneId } = useApp();
+  const { t } = useI18n();
   const [overview, setOverview] = useState<OverviewResponse | null>(null);
   const [hotspots, setHotspots] = useState<HotspotRanking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,19 @@ export default function Overview() {
     vegetationChange: c.ndviMean - c19.ndviMean, averageNdvi: c.ndviMean, averageNdbi: c.ndbiMean,
   };
   const quality = overview?.quality;
-  const fallback = useMemo(() => [...ds.zones].sort((a, b) => b.byYear[year].lst - a.byYear[year].lst).slice(0, 5).map((z, i) => ({ rank: i + 1, zoneId: z.zone.id, zone: z.zone.name, temperature: z.byYear[year].lst, peakTemperature: z.byYear[year].lst + 1.2, severity: z.byYear[year].lst > 43 ? "Critical" as const : "High" as const, persistence: z.persistentFrac, areaKm2: z.areaKm2 })), [ds, year]);
+  const fallback = useMemo(
+    () => [...ds.zones].sort((a, b) => b.byYear[year].lst - a.byYear[year].lst).slice(0, 5).map((z, i) => ({
+      rank: i + 1,
+      zoneId: z.zone.id,
+      zone: z.zone.name,
+      temperature: z.byYear[year].lst,
+      peakTemperature: z.byYear[year].lst + 1.2,
+      severity: z.byYear[year].lst > 43 ? "Critical" as const : "High" as const,
+      persistence: z.persistentFrac,
+      areaKm2: z.areaKm2,
+    })),
+    [ds, year],
+  );
   const top = hotspots.length ? hotspots : fallback;
 
   return (
@@ -41,14 +55,14 @@ export default function Overview() {
         <div>
           <div className="flex items-center gap-2">
             <ThermometerSun className="h-6 w-6 text-orange-500" />
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-3xl">Nagpur Urban Heat Island Analysis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("home.title")}</h1>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <YearPicker value={year} onChange={setYear} />
           {!loading && (
             <Pill tone={overview?.source === "mock" ? "amber" : "green"}>
-              {overview?.source === "mock" ? "Demonstration dataset" : "Live data"}
+              {overview?.source === "mock" ? t("common.demoData") : t("common.liveData")}
             </Pill>
           )}
         </div>
@@ -60,58 +74,58 @@ export default function Overview() {
           {/* Situation Snapshot Section */}
           <div>
             <div className="mb-4 border-l-4 border-orange-500 pl-4">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900">Situation Snapshot</h2>
-              <p className="mt-1 text-xs text-slate-600">Pre-monsoon composite · {year}</p>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900">{t("home.situationSnapshot")}</h2>
+              <p className="mt-1 text-xs text-slate-600">{t("home.preMonsoonComposite", { year })}</p>
             </div>
             <div className="space-y-3">
               {/* Row 1: Temperature Cards */}
               <div className="grid grid-cols-2 gap-3">
-                <KPI 
-                  label="Average Temperature" 
-                  value={fmt.temp(kpis.averageTemperature)} 
-                  sub={`${fmt.delta(kpis.averageTemperature - c19.lstMean, 1, "°C")} vs 2019`} 
-                  tone="hot" 
-                  icon={<Flame className="h-4 w-4 text-orange-500" />} 
+                <KPI
+                  label={t("home.avgTemperature")}
+                  value={fmt.temp(kpis.averageTemperature)}
+                  sub={`${fmt.delta(kpis.averageTemperature - c19.lstMean, 1, "°C")} ${t("home.vs2019")}`}
+                  tone="hot"
+                  icon={<Flame className="h-4 w-4 text-orange-500" />}
                 />
-                <KPI 
-                  label="Maximum Temperature" 
-                  value={fmt.temp(kpis.maximumTemperature)} 
-                  sub="mapped surface maximum" 
-                  tone="hot" 
+                <KPI
+                  label={t("home.maxTemperature")}
+                  value={fmt.temp(kpis.maximumTemperature)}
+                  sub={t("home.mappedSurfaceMax")}
+                  tone="hot"
                 />
               </div>
 
               {/* Row 2: Hotspot & Vegetation */}
               <div className="grid grid-cols-2 gap-3">
-                <KPI 
-                  label="Hotspot Count" 
-                  value={kpis.hotspotCount.toLocaleString()} 
-                  sub="cells in hottest decile" 
-                  tone="amber" 
+                <KPI
+                  label={t("home.hotspotCount")}
+                  value={kpis.hotspotCount.toLocaleString()}
+                  sub={t("home.cellsHottestDecile")}
+                  tone="amber"
                 />
-                <KPI 
-                  label="Vegetation Change" 
-                  value={fmt.delta(kpis.vegetationChange, 3)} 
-                  sub="mean NDVI vs 2019" 
-                  tone="green" 
-                  icon={<Leaf className="h-4 w-4 text-emerald-500" />} 
+                <KPI
+                  label={t("home.vegetationChange")}
+                  value={fmt.delta(kpis.vegetationChange, 3)}
+                  sub={t("home.meanNdviVs2019")}
+                  tone="green"
+                  icon={<Leaf className="h-4 w-4 text-emerald-500" />}
                 />
               </div>
 
               {/* Row 3: NDVI & NDBI (Secondary Tier) */}
               <div className="grid grid-cols-2 gap-3 opacity-80">
-                <KPI 
-                  label="Average NDVI" 
-                  value={kpis.averageNdvi.toFixed(3)} 
-                  sub="vegetation greenness" 
-                  tone="green" 
+                <KPI
+                  label={t("home.avgNdvi")}
+                  value={kpis.averageNdvi.toFixed(3)}
+                  sub={t("home.vegetationGreenness")}
+                  tone="green"
                 />
-                <KPI 
-                  label="Average NDBI" 
-                  value={kpis.averageNdbi.toFixed(3)} 
-                  sub="built-up intensity" 
-                  tone="violet" 
-                  icon={<Building2 className="h-4 w-4 text-purple-500" />} 
+                <KPI
+                  label={t("home.avgNdbi")}
+                  value={kpis.averageNdbi.toFixed(3)}
+                  sub={t("home.builtUpIntensity")}
+                  tone="violet"
+                  icon={<Building2 className="h-4 w-4 text-purple-500" />}
                 />
               </div>
             </div>
@@ -120,20 +134,20 @@ export default function Overview() {
             {quality && (
               <details className="mt-4 group">
                 <summary className="cursor-pointer rounded-lg bg-slate-100 px-3 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition flex items-center gap-2">
-                  <span>Data quality: <span className="font-bold text-emerald-600">{quality.label}</span></span>
+                  <span>{t("home.dataQuality", { label: quality.label })}</span>
                   <span className="group-open:rotate-180 transition">▼</span>
                 </summary>
                 <div className="mt-3 rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs text-slate-600 space-y-1">
                   <div className="flex justify-between">
-                    <span>Usable scenes:</span>
+                    <span>{t("home.usableScenes")}:</span>
                     <span className="font-semibold text-slate-900">{quality.clearScenes}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Coverage:</span>
+                    <span>{t("home.coverage")}:</span>
                     <span className="font-semibold text-slate-900">{quality.completeness.toFixed(1)}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Residual cloud:</span>
+                    <span>{t("home.residualCloud")}:</span>
                     <span className="font-semibold text-slate-900">{quality.residualCloud.toFixed(1)}%</span>
                   </div>
                 </div>
@@ -145,14 +159,14 @@ export default function Overview() {
           <div>
             <div className="mb-4 border-l-4 border-orange-500 pl-4 flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900">Top Hotspots</h2>
-                <p className="mt-1 text-xs text-slate-600">Zone-mean LST ranked for the selected season</p>
+                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900">{t("home.topHotspots")}</h2>
+                <p className="mt-1 text-xs text-slate-600">{t("home.zoneMeanLst")}</p>
               </div>
-              <button 
-                onClick={() => setView("insights")} 
+              <button
+                onClick={() => setView("insights")}
                 className="text-xs font-semibold text-orange-600 hover:text-orange-700 transition"
               >
-                View all →
+                {t("home.viewAll")}
               </button>
             </div>
 
@@ -167,8 +181,8 @@ export default function Overview() {
                     {/* Badge */}
                     <div className={cn(
                       "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-bold text-sm transition",
-                      i < 3 
-                        ? "bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-md" 
+                      i < 3
+                        ? "bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-md"
                         : "bg-slate-100 text-slate-700"
                     )}>
                       {h.rank}
@@ -180,32 +194,32 @@ export default function Overview() {
                         <p className="font-semibold text-slate-900 truncate text-sm">{h.zone}</p>
                         <span className="shrink-0 text-base font-bold text-slate-900 tabular-nums">{h.temperature.toFixed(1)}°</span>
                       </div>
-                      
+
                       {/* Severity Badge & Stats */}
                       <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <span 
+                        <span
                           className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
                           style={{
                             backgroundColor: h.severity === "Critical" ? "#fee2e2" : "#fef3c7",
                             color: h.severity === "Critical" ? "#991b1b" : "#92400e"
                           }}
                         >
-                          <span 
+                          <span
                             className="h-2 w-2 rounded-full"
                             style={{
                               background: h.severity === "Critical" ? "#dc2626" : "#f59e0b"
                             }}
                           />
-                          {h.severity}
+                          {h.severity === "Critical" ? t("home.critical") : t("home.high")}
                         </span>
                         <span className="text-[11px] text-slate-500">
-                          {(h.persistence * 100).toFixed(0)}% persistent · {h.areaKm2.toFixed(1)} km²
+                          {(h.persistence * 100).toFixed(0)}% · {h.areaKm2.toFixed(1)} km²
                         </span>
                       </div>
 
                       {/* Persistence Bar */}
                       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                        <div 
+                        <div
                           className="h-full rounded-full bg-gradient-to-r from-orange-400 to-red-500 shadow-sm"
                           style={{ width: `${Math.min(100, h.persistence * 100)}%` }}
                         />
@@ -219,7 +233,7 @@ export default function Overview() {
 
           {/* Action Buttons */}
           <div className="pt-2">
-            <p className="mb-3 text-xs font-medium uppercase tracking-wider text-slate-600">Actions</p>
+            <p className="mb-3 text-xs font-medium uppercase tracking-wider text-slate-600">{t("home.actions")}</p>
             <div className="space-y-2">
               <button
                 onClick={() => { setSelectedLayer("lst"); setView("explore"); }}
@@ -227,7 +241,7 @@ export default function Overview() {
               >
                 <span className="flex items-center gap-2">
                   <MapIcon className="h-4 w-4" />
-                  Explore Analysis
+                  {t("home.exploreAnalysis")}
                 </span>
                 <ArrowRight className="h-4 w-4" />
               </button>
@@ -237,7 +251,7 @@ export default function Overview() {
               >
                 <span className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
-                  Test Scenarios
+                  {t("home.testScenarios")}
                 </span>
                 <ArrowRight className="h-4 w-4" />
               </button>
@@ -248,10 +262,10 @@ export default function Overview() {
         {/* RIGHT SECTION: MAP & CARDS */}
         <section className="space-y-4">
           {/* Map Card */}
-          <Card 
-            title={`Land Surface Temperature · ${year}`} 
-            subtitle="Interactive map · scroll / pinch to zoom · click zones to compare" 
-            right={<Pill tone="orange">{fmt.temp(c.lstMean)} mean</Pill>} 
+          <Card
+            title={t("home.landSurfaceTemperature", { year })}
+            subtitle={t("home.mapSubtitle")}
+            right={<Pill tone="orange">{fmt.temp(c.lstMean)} {t("home.mean")}</Pill>}
             bodyClassName="p-4"
           >
             <HomeMap />
@@ -261,45 +275,45 @@ export default function Overview() {
           {/* Bottom Insight Cards */}
           <div className="grid gap-4 md:grid-cols-3">
             {[
-              { 
-                icon: TrendingUp, 
-                title: "What is new?", 
-                eyebrow: "Change since 2019", 
-                value: fmt.delta(c.lstMean - c19.lstMean, 2, "°C"), 
+              {
+                icon: TrendingUp,
+                title: t("home.whatIsNew"),
+                eyebrow: t("home.changeSince2019"),
+                value: fmt.delta(c.lstMean - c19.lstMean, 2, "°C"),
                 bgColor: "#FEF3C7",
                 textColor: "#92400E",
                 accentColor: "#F59E0B",
-                desc: "City-mean LST; use Explore to locate the cells and corridors behind this change." 
+                desc: t("home.mapSubtitle"),
               },
-              { 
-                icon: AlertTriangle, 
-                title: "Persistent risk", 
-                eyebrow: "Structural, not one-season heat", 
-                value: `${top.filter((h) => h.persistence >= 0.5).length} priority zones`, 
+              {
+                icon: AlertTriangle,
+                title: t("home.persistentRisk"),
+                eyebrow: t("home.structuralNotOneSeason"),
+                value: t("home.priorityZones", { n: top.filter((h) => h.persistence >= 0.5).length }),
                 bgColor: "#FEE2E2",
                 textColor: "#991B1B",
                 accentColor: "#DC2626",
-                desc: "with ≥50% of land in persistent hotspot conditions." 
+                desc: t("home.persistent50"),
               },
-              { 
-                icon: Database, 
-                title: "Data status", 
-                eyebrow: "Ready for review", 
-                value: quality?.label ?? "Checking", 
+              {
+                icon: Database,
+                title: t("home.dataStatus"),
+                eyebrow: t("home.readyForReview"),
+                value: quality?.label ?? t("home.checking"),
                 bgColor: "#EFF6FF",
                 textColor: "#0369A1",
                 accentColor: "#0284C7",
-                desc: quality ? `${quality.completeness.toFixed(1)}% coverage from ${quality.clearScenes} usable scenes` : "Loading quality indicators…" 
+                desc: quality ? `${quality.completeness.toFixed(1)}%` : t("common.loading"),
               },
             ].map((card) => (
-              <div 
-                key={card.title} 
+              <div
+                key={card.title}
                 className="rounded-xl border border-slate-200 bg-white p-4 shadow-md hover:shadow-lg transition-all hover:border-slate-300 group"
                 style={{ backgroundColor: card.bgColor }}
               >
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-4">
-                  <div 
+                  <div
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                     style={{ backgroundColor: `${card.accentColor}20`, color: card.accentColor }}
                   >
@@ -314,8 +328,8 @@ export default function Overview() {
                 </div>
 
                 {/* Value */}
-                <p 
-                  className="text-3xl font-bold tracking-tight tabular-nums" 
+                <p
+                  className="text-3xl font-bold tracking-tight tabular-nums"
                   style={{ color: card.textColor }}
                 >
                   {card.value}

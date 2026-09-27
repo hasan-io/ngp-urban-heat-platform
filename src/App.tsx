@@ -5,6 +5,7 @@ import type { Year } from "@/data/nagpur";
 import { MLProvider } from "@/ml/context";
 import { Footer, TopNav } from "@/components/Chrome";
 import { loadLiveDataset, normalizeBaseUrl } from "@/data/live";
+import { LanguageProvider } from "@/i18n";
 import Overview from "@/views/Overview";
 import ScenarioLab from "@/views/ScenarioLab";
 import Explore from "@/views/Explore";
@@ -12,7 +13,6 @@ import Insights from "@/views/Insights";
 import type { AreaKey } from "@/data/boundaries";
 import { getDistrictDataset } from "@/data/districts";
 
-// Heavy pages are lazy-loaded so their module trees don't run on Home / Explore.
 const Methodology = lazy(() => import("@/views/Methodology"));
 const HardwareSimulation = lazy(() => import("@/views/HardwareSimulation"));
 
@@ -164,37 +164,39 @@ export default function App() {
   ]);
 
   return (
-    <Ctx.Provider value={state}>
-      <MLProvider key={activeDs.id} ds={activeDs} year={year}>
-        <div className={cn("flex h-full min-h-screen flex-col", "uhi-light bg-white")}>
-          <TopNav />
+    <LanguageProvider>
+      <Ctx.Provider value={state}>
+        <MLProvider key={activeDs.id} ds={activeDs} year={year}>
+          <div className={cn("flex h-full min-h-screen flex-col", "uhi-light bg-white")}>
+            <TopNav />
 
-          <main className="flex min-w-0 flex-1 flex-col">
-            {dataSource.status === "loading" && (
-              <div className="no-print border-b border-emerald-400/20 bg-emerald-500/10 px-4 py-1.5 text-[11px] text-emerald-100 sm:px-6">
-                Loading live composites from {dataSource.baseUrl}{dataSource.progress ? ` · ${dataSource.progress.label} (${dataSource.progress.done}/${dataSource.progress.total})` : "…"}
+            <main className="flex min-w-0 flex-1 flex-col">
+              {dataSource.status === "loading" && (
+                <div className="no-print border-b border-emerald-400/20 bg-emerald-500/10 px-4 py-1.5 text-[11px] text-emerald-100 sm:px-6">
+                  Loading live composites from {dataSource.baseUrl}{dataSource.progress ? ` · ${dataSource.progress.label} (${dataSource.progress.done}/${dataSource.progress.total})` : "…"}
+                </div>
+              )}
+              {dataSource.status === "error" && (
+                <div className="no-print flex items-center justify-between gap-3 border-b border-amber-400/20 bg-amber-500/10 px-4 py-1.5 text-[11px] text-amber-100 sm:px-6">
+                  <span>Data service unavailable ({dataSource.error}). Showing the demonstration dataset.</span>
+                  <button onClick={() => setDataSource((d) => ({ ...d, status: "demo" }))} className="shrink-0 text-amber-200 hover:text-white">dismiss</button>
+                </div>
+              )}
+              <div className="flex-1">
+                <Suspense fallback={<div className="flex h-96 items-center justify-center text-sm text-slate-400">Loading…</div>}>
+                  {view === "home" && <Overview />}
+                  {view === "explore" && <Explore />}
+                  {view === "planning" && <ScenarioLab />}
+                  {view === "hardware" && <HardwareSimulation />}
+                  {view === "insights" && <Insights />}
+                  {view === "methodology" && <Methodology />}
+                </Suspense>
               </div>
-            )}
-            {dataSource.status === "error" && (
-              <div className="no-print flex items-center justify-between gap-3 border-b border-amber-400/20 bg-amber-500/10 px-4 py-1.5 text-[11px] text-amber-100 sm:px-6">
-                <span>Data service unavailable ({dataSource.error}). Showing the demonstration dataset.</span>
-                <button onClick={() => setDataSource((d) => ({ ...d, status: "demo" }))} className="shrink-0 text-amber-200 hover:text-white">dismiss</button>
-              </div>
-            )}
-            <div className="flex-1">
-              <Suspense fallback={<div className="flex h-96 items-center justify-center text-sm text-slate-400">Loading…</div>}>
-                {view === "home" && <Overview />}
-                {view === "explore" && <Explore />}
-                {view === "planning" && <ScenarioLab />}
-                {view === "hardware" && <HardwareSimulation />}
-                {view === "insights" && <Insights />}
-                {view === "methodology" && <Methodology />}
-              </Suspense>
-            </div>
-            {view === "insights" || view === "methodology" ? <Footer /> : null}
-          </main>
-        </div>
-      </MLProvider>
-    </Ctx.Provider>
+              {view === "insights" || view === "methodology" ? <Footer /> : null}
+            </main>
+          </div>
+        </MLProvider>
+      </Ctx.Provider>
+    </LanguageProvider>
   );
 }

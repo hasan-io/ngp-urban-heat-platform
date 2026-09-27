@@ -6,9 +6,10 @@ import {
 } from "lucide-react";
 import SensorMap from "@/components/SensorMap";
 import { Pill, Stat, chartTheme } from "@/components/ui";
+import { useI18n } from "@/i18n";
 import {
   SIM_ALERT_DURATION_MS, SIM_BASE_INTERVAL_MS, SIM_MAX_DAYS,
-  STATE_COLOR, STATE_LABEL,
+  STATE_COLOR,
   advanceSensor, createSensors, deltaOf, latestValue, playAlertSound, primeAudio, simClock,
   type AlertEvent, type Sensor,
 } from "@/data/hardware";
@@ -29,6 +30,7 @@ function mulberry32(seed: number) {
 }
 
 export default function HardwareSimulation() {
+  const { t } = useI18n();
   const [sensors, setSensors] = useState<Sensor[]>(() => createSensors());
   const [alerts, setAlerts] = useState<AlertEvent[]>([]);
   const [status, setStatus] = useState<RunStatus>("idle");
@@ -90,7 +92,7 @@ export default function HardwareSimulation() {
             clock,
             area: s.zone,
             sensorId: s.id,
-            message: "Rising trend detected",
+            message: t("hw.risingTrendDetected"),
             severity: "warning",
           });
         } else if (s.state === "critical" && prev !== "critical") {
@@ -99,7 +101,7 @@ export default function HardwareSimulation() {
             clock,
             area: s.zone,
             sensorId: s.id,
-            message: "Persistent temperature rise — critical",
+            message: t("hw.persistentTempRiseCritical"),
             severity: "critical",
           });
         } else if (s.state === "offline") {
@@ -108,7 +110,7 @@ export default function HardwareSimulation() {
             clock,
             area: s.zone,
             sensorId: s.id,
-            message: "Sensor offline",
+            message: t("hw.sensorOfflineEvent"),
             severity: "info",
           });
         }
@@ -122,7 +124,7 @@ export default function HardwareSimulation() {
     setAlerts((prev) => [...transitions.reverse(), ...prev]);
 
     // if a critical event just occurred, fire the overlay + sound
-    const critical = transitions.find((t) => t.severity === "critical");
+    const critical = transitions.find((x) => x.severity === "critical");
     if (critical) {
       setActiveAlert(critical);
       if (!muted) playAlertSound();
@@ -131,6 +133,8 @@ export default function HardwareSimulation() {
         setActiveAlert((cur) => (cur?.id === critical.id ? null : cur));
       }, SIM_ALERT_DURATION_MS);
     }
+    // t changes when language changes; re-running is harmless (transitions is empty)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sensors, day, muted]);
 
   // -------- cleanup on unmount --------
@@ -182,7 +186,7 @@ export default function HardwareSimulation() {
     const days = Math.max(1, day);
     const rows: Record<string, number | string>[] = [];
     for (let d = 1; d <= days; d++) {
-      const row: Record<string, number | string> = { day: `Day ${d}` };
+      const row: Record<string, number | string> = { day: `${t("hw.day")} ${d}` };
       for (const s of sensors) {
         const r = s.readings.find((x) => x.day === d);
         if (r) row[s.id] = r.value;
@@ -190,19 +194,19 @@ export default function HardwareSimulation() {
       rows.push(row);
     }
     return rows;
-  }, [sensors, day]);
+  }, [sensors, day, t]);
 
-  const alertBandFrom = criticalSensors.length ? `Day ${Math.max(1, (criticalSensors[0].readings.length || 1) - 3)}` : null;
-  const alertBandTo = day > 0 ? `Day ${day}` : null;
+  const alertBandFrom = criticalSensors.length ? `${t("hw.day")} ${Math.max(1, (criticalSensors[0].readings.length || 1) - 3)}` : null;
+  const alertBandTo = day > 0 ? `${t("hw.day")} ${day}` : null;
 
   // -------- timeline stages --------
-  const STAGES = [
-    { day: 1, label: "Baseline" },
-    { day: 2, label: "Rising" },
-    { day: 3, label: "Rising" },
-    { day: 4, label: "Warning" },
-    { day: 5, label: "Persistent heat" },
-    { day: 6, label: "Critical alert" },
+  const STAGES: { day: number; label: string }[] = [
+    { day: 1, label: t("hw.timelineBaseline") },
+    { day: 2, label: t("hw.timelineRising") },
+    { day: 3, label: t("hw.timelineRising") },
+    { day: 4, label: t("hw.timelineWarning") },
+    { day: 5, label: t("hw.timelinePersistentHeat") },
+    { day: 6, label: t("hw.timelineCritical") },
   ];
 
   const fmtElapsed = (s: number) => {
@@ -211,25 +215,32 @@ export default function HardwareSimulation() {
     return `${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
   };
 
+  // Local state labels — use i18n instead of hardware.ts STATE_LABEL
+  const stateLabels: Record<Sensor["state"], string> = {
+    normal: t("hw.sensorNormal"),
+    rising: t("hw.sensorRising"),
+    warning: t("hw.sensorWarning"),
+    critical: t("hw.sensorCritical"),
+    offline: t("hw.sensorOffline"),
+  };
+
   return (
     <div className="mx-auto max-w-[1500px] space-y-6 p-4 sm:p-6">
       {/* ============= HEADER ============= */}
       <header className="flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#C2410C]">Evidence &amp; monitoring</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#C2410C]">{t("nav.hardware")}</p>
           <div className="mt-1 flex items-center gap-2">
             <Activity className="h-5 w-5 text-[#FF6B35]" />
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Real-Time Environmental Monitoring</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{t("hw.title")}</h1>
           </div>
-          <p className="mt-1 max-w-3xl text-sm text-slate-600">
-            Simulated sensor network for continuous urban heat monitoring.
-          </p>
+          <p className="mt-1 max-w-3xl text-sm text-slate-600">{t("hw.subtitle")}</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <Pill tone="amber">Simulation mode</Pill>
+            <Pill tone="amber">{t("common.simulationMode")}</Pill>
             <Pill tone={running ? "green" : hasCritical ? "red" : "slate"}>
-              {status === "idle" ? "Ready" : running ? "Monitoring" : status === "paused" ? "Paused" : hasCritical ? "Critical alert" : "Complete"}
+              {status === "idle" ? t("hw.ready") : running ? t("hw.monitoring") : status === "paused" ? t("hw.paused") : hasCritical ? t("hw.criticalAlert") : t("hw.complete")}
             </Pill>
-            <Pill tone="slate">{online} / {sensors.length} sensors online</Pill>
+            <Pill tone="slate">{online} / {sensors.length} {t("hw.activeSensors").toLowerCase()}</Pill>
           </div>
         </div>
       </header>
@@ -252,7 +263,7 @@ export default function HardwareSimulation() {
               "text-xs font-semibold uppercase tracking-wider",
               running ? "text-emerald-800" : status === "paused" ? "text-amber-800" : "text-slate-600",
             )}>
-              {status === "idle" ? "Ready" : running ? "Live monitoring" : status === "paused" ? "Paused" : "Complete"}
+              {status === "idle" ? t("hw.ready") : running ? t("hw.monitoring") : status === "paused" ? t("hw.paused") : t("hw.complete")}
             </span>
           </div>
 
@@ -260,7 +271,7 @@ export default function HardwareSimulation() {
             <ThermometerSun className={cn("h-4 w-4", running ? "text-[#FF6B35]" : "text-slate-400")} />
             <div className="flex-1">
               <div className="flex items-baseline justify-between">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Sim day</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.simDay")}</span>
                 <span className="text-base font-bold tabular-nums text-slate-900">{day} / {SIM_MAX_DAYS}</span>
               </div>
               <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
@@ -274,26 +285,26 @@ export default function HardwareSimulation() {
             activeAlerts > 0 ? "border-red-300 bg-red-50" : "border-slate-200 bg-slate-50",
           )}>
             <AlertTriangle className={cn("h-3.5 w-3.5", activeAlerts > 0 ? "text-[#DC2626]" : "text-slate-400")} />
-            <span className={cn("text-xs", activeAlerts > 0 ? "text-red-700" : "text-slate-600")}>Alerts</span>
+            <span className={cn("text-xs", activeAlerts > 0 ? "text-red-700" : "text-slate-600")}>{t("hw.alerts")}</span>
             <span className={cn("text-sm font-bold tabular-nums", activeAlerts > 0 ? "text-[#DC2626]" : "text-slate-900")}>{activeAlerts}</span>
           </div>
 
           <div className="ml-auto flex items-center gap-2">
             {status === "idle" || status === "done" ? (
               <button onClick={start} className="flex items-center gap-1.5 rounded-xl bg-[#FF6B35] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#e85a28]">
-                <Play className="h-3.5 w-3.5" /> Start simulation
+                <Play className="h-3.5 w-3.5" /> {t("hw.startSimulation")}
               </button>
             ) : running ? (
               <button onClick={pause} className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50">
-                <Pause className="h-3.5 w-3.5" /> Pause
+                <Pause className="h-3.5 w-3.5" /> {t("hw.pause")}
               </button>
             ) : (
               <button onClick={start} className="flex items-center gap-1.5 rounded-xl bg-[#FF6B35] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#e85a28]">
-                <Play className="h-3.5 w-3.5" /> Resume
+                <Play className="h-3.5 w-3.5" /> {t("hw.resumeSim")}
               </button>
             )}
             <button onClick={reset} className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50">
-              <RotateCcw className="h-3.5 w-3.5" /> Reset
+              <RotateCcw className="h-3.5 w-3.5" /> {t("common.reset")}
             </button>
             <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5">
               {[1, 2, 4].map((s) => (
@@ -302,7 +313,7 @@ export default function HardwareSimulation() {
                 </button>
               ))}
             </div>
-            <button onClick={() => setMuted((m) => !m)} title={muted ? "Unmute alert sound" : "Mute alert sound"} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50">
+            <button onClick={() => setMuted((m) => !m)} title={muted ? t("common.unmute") : t("common.mute")} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50">
               {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
             </button>
           </div>
@@ -310,7 +321,7 @@ export default function HardwareSimulation() {
 
         {/* ----- timeline ----- */}
         <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-3 text-[11px]">
-          <span className="font-semibold uppercase tracking-wider text-slate-500">Timeline</span>
+          <span className="font-semibold uppercase tracking-wider text-slate-500">{t("hw.timeline")}</span>
           {STAGES.map((st) => (
             <span key={st.day} className={cn(
               "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition",
@@ -320,7 +331,7 @@ export default function HardwareSimulation() {
                   : "border-orange-200 bg-orange-50 text-[#C2410C]"
                 : "border-slate-200 bg-white text-slate-500",
             )}>
-              <span className="font-bold tabular-nums">Day {st.day}</span>
+              <span className="font-bold tabular-nums">{t("hw.day")} {st.day}</span>
               <span>— {st.label}</span>
             </span>
           ))}
@@ -341,7 +352,7 @@ export default function HardwareSimulation() {
             <div className="border-t border-red-200 bg-red-50 px-4 py-2.5">
               <div className="flex flex-wrap items-center gap-3 text-xs">
                 <span className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[#DC2626]">
-                  <AlertTriangle className="h-3.5 w-3.5" /> Heat trend alert · Active
+                  <AlertTriangle className="h-3.5 w-3.5" /> {t("hw.heatTrendAlertActive")}
                 </span>
                 {criticalSensors.map((s) => (
                   <span key={s.id} className="text-red-800">
@@ -353,11 +364,11 @@ export default function HardwareSimulation() {
           )}
 
           <div className="flex flex-wrap items-center gap-4 border-t border-slate-100 px-4 py-2.5 text-[11px]">
-            <span className="font-semibold uppercase tracking-wider text-slate-500">Sensor state</span>
+            <span className="font-semibold uppercase tracking-wider text-slate-500">{t("hw.sensorState")}</span>
             {(["normal", "rising", "warning", "critical", "offline"] as const).map((st) => (
               <span key={st} className="flex items-center gap-1.5 text-slate-600">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: STATE_COLOR[st] }} />
-                {STATE_LABEL[st]}
+                {stateLabels[st]}
               </span>
             ))}
           </div>
@@ -370,43 +381,43 @@ export default function HardwareSimulation() {
             running ? "border-emerald-200" : "border-slate-200",
           )}>
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-900">Live monitoring</h3>
+              <h3 className="text-sm font-semibold text-slate-900">{t("hw.liveMonitoringPanel")}</h3>
               {running ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
-                  <span className="live-dot h-1.5 w-1.5 rounded-full bg-emerald-500" /> LIVE
+                  <span className="live-dot h-1.5 w-1.5 rounded-full bg-emerald-500" /> {t("hw.live")}
                 </span>
               ) : (
-                <Pill tone="slate">{status === "idle" ? "Ready" : status === "paused" ? "Paused" : "Complete"}</Pill>
+                <Pill tone="slate">{status === "idle" ? t("hw.ready") : status === "paused" ? t("hw.paused") : t("hw.complete")}</Pill>
               )}
             </div>
 
             <div className="mt-3 space-y-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Current temperature (highest)</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.currentTempHighest")}</p>
                 <p className="mt-0.5 text-3xl font-bold tabular-nums text-[#FF6B35]">
                   {hottestValue != null ? `${hottestValue.toFixed(1)} °C` : "—"}
                 </p>
-                <p className="text-[11px] text-slate-500">{hottest ? hottest.zone : "Awaiting first reading"}</p>
+                <p className="text-[11px] text-slate-500">{hottest ? hottest.zone : t("hw.awaitingFirstReading")}</p>
               </div>
 
               <Stat
-                label={<span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Temperature trend</span>}
+                label={<span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> {t("hw.temperatureTrend")}</span>}
                 value={
                   <span className={cn("text-base font-bold tabular-nums", hottestDelta >= 2 ? "text-[#DC2626]" : hottestDelta >= 1 ? "text-amber-600" : "text-slate-700")}>
                     {hottestDelta >= 0 ? "+" : ""}{hottestDelta.toFixed(1)} °C
                   </span>
                 }
               />
-              <Stat label={<span className="flex items-center gap-1"><Droplets className="h-3 w-3" /> Humidity</span>} value={hottest ? `${hottest.humidity}%` : "—"} />
-              <Stat label="Active sensors" value={<span className="text-base font-bold text-slate-900">{online} / {sensors.length}</span>} />
-              <Stat label="Active alerts" value={<span className={cn("text-base font-bold", activeAlerts > 0 ? "text-[#DC2626]" : "text-slate-700")}>{activeAlerts}</span>} />
-              <Stat label="Monitoring duration" value={<span className="text-base font-bold tabular-nums text-slate-900">{fmtElapsed(elapsedSec)}</span>} />
+              <Stat label={<span className="flex items-center gap-1"><Droplets className="h-3 w-3" /> {t("hw.humidity")}</span>} value={hottest ? `${hottest.humidity}%` : "—"} />
+              <Stat label={t("hw.activeSensors")} value={<span className="text-base font-bold text-slate-900">{online} / {sensors.length}</span>} />
+              <Stat label={t("hw.activeAlerts")} value={<span className={cn("text-base font-bold", activeAlerts > 0 ? "text-[#DC2626]" : "text-slate-700")}>{activeAlerts}</span>} />
+              <Stat label={t("hw.monitoringDuration")} value={<span className="text-base font-bold tabular-nums text-slate-900">{fmtElapsed(elapsedSec)}</span>} />
             </div>
           </div>
 
           {/* sensor list */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.06)]">
-            <h3 className="text-sm font-semibold text-slate-900">Sensor network</h3>
+            <h3 className="text-sm font-semibold text-slate-900">{t("hw.sensorNetwork")}</h3>
             <ul className="mt-3 max-h-[320px] space-y-1.5 overflow-y-auto pr-1">
               {sensors.map((s) => (
                 <li key={s.id}>
@@ -425,11 +436,9 @@ export default function HardwareSimulation() {
 
           {/* satellite vs sensor note */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Satellite vs sensor</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.satelliteVsSensor")}</p>
             <p className="mt-2 text-[11px] leading-relaxed text-slate-600">
-              Satellite observations represent <b className="text-slate-800">land surface temperature</b> at overpass.
-              The simulated sensors represent <b className="text-slate-800">near-surface ambient temperature</b>.
-              They measure different physical quantities and are not directly interchangeable.
+              {t("hw.satelliteVsSensorNote")}
             </p>
           </div>
         </aside>
@@ -439,10 +448,10 @@ export default function HardwareSimulation() {
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.06)]">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">Temperature trend — {Math.max(1, day)} of {SIM_MAX_DAYS} simulated days</h2>
-            <p className="text-xs text-slate-500">Multi-day trend drives the alert. A single reading does not.</p>
+            <h2 className="text-base font-semibold text-slate-900">{t("hw.trendChartTitle", { day: Math.max(1, day), total: SIM_MAX_DAYS })}</h2>
+            <p className="text-xs text-slate-500">{t("hw.trendChartSubtitle")}</p>
           </div>
-          {hasCritical && <Pill tone="red">Persistent rise detected · {criticalSensors.length} sensor{criticalSensors.length === 1 ? "" : "s"}</Pill>}
+          {hasCritical && <Pill tone="red">{t("hw.persistentRiseDetected", { n: criticalSensors.length })}</Pill>}
         </div>
 
         <div className="mt-4 h-72">
@@ -452,7 +461,7 @@ export default function HardwareSimulation() {
               <XAxis dataKey="day" stroke={chartTheme.axis} fontSize={11} tickLine={false} />
               <YAxis stroke={chartTheme.axis} fontSize={11} tickLine={false} domain={[28, "auto"]} unit="°C" />
               <Tooltip contentStyle={chartTheme.tooltip} formatter={(v) => `${Number(v).toFixed(1)} °C`} />
-              <ReferenceLine y={38} stroke="#DC2626" strokeDasharray="4 4" label={{ value: "Heat alert band (~38 °C)", position: "insideTopRight", fill: "#DC2626", fontSize: 10 }} />
+              <ReferenceLine y={38} stroke="#DC2626" strokeDasharray="4 4" label={{ value: t("hw.heatAlertBand"), position: "insideTopRight", fill: "#DC2626", fontSize: 10 }} />
               {alertBandFrom && alertBandTo && hasCritical && (
                 <ReferenceArea x1={alertBandFrom} x2={alertBandTo} fill="#DC2626" fillOpacity={0.08} />
               )}
@@ -477,23 +486,23 @@ export default function HardwareSimulation() {
       {/* ============= ALERT HISTORY ============= */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.06)]">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-slate-900">Alert history</h2>
-          <Pill tone="slate">{alerts.length} event{alerts.length === 1 ? "" : "s"}</Pill>
+          <h2 className="text-base font-semibold text-slate-900">{t("hw.alertHistory")}</h2>
+          <Pill tone="slate">{alerts.length} {t("hw.event").toLowerCase()}</Pill>
         </div>
         <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
           <table className="w-full min-w-[640px] text-xs">
             <thead className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
               <tr>
-                <th className="px-3 py-2 text-left font-semibold">Time</th>
-                <th className="px-3 py-2 text-left font-semibold">Sensor</th>
-                <th className="px-3 py-2 text-left font-semibold">Area</th>
-                <th className="px-3 py-2 text-left font-semibold">Event</th>
-                <th className="px-3 py-2 text-center font-semibold">Severity</th>
+                <th className="px-3 py-2 text-left font-semibold">{t("hw.time")}</th>
+                <th className="px-3 py-2 text-left font-semibold">{t("hw.sensor")}</th>
+                <th className="px-3 py-2 text-left font-semibold">{t("hw.area")}</th>
+                <th className="px-3 py-2 text-left font-semibold">{t("hw.event")}</th>
+                <th className="px-3 py-2 text-center font-semibold">{t("hw.severity")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {alerts.length === 0 && (
-                <tr><td colSpan={5} className="px-3 py-6 text-center text-slate-400">No events yet. Start the simulation to begin monitoring.</td></tr>
+                <tr><td colSpan={5} className="px-3 py-6 text-center text-slate-400">{t("hw.noEventsYet")}</td></tr>
               )}
               {alerts.map((a) => (
                 <tr key={a.id} className="hover:bg-slate-50">
@@ -519,54 +528,57 @@ export default function HardwareSimulation() {
               <div className="flex items-center gap-3">
                 <AlertTriangle className="h-6 w-6" />
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-90">Simulated monitoring alert</p>
-                  <p className="text-lg font-bold uppercase tracking-wide">Critical environmental alert</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-90">{t("hw.simulatedMonitoringAlert")}</p>
+                  <p className="text-lg font-bold uppercase tracking-wide">{t("hw.criticalEnvAlert")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setMuted((m) => !m)}
-                  title={muted ? "Unmute alarm" : "Mute alarm"}
+                  title={muted ? t("common.unmute") : t("common.mute")}
                   className="rounded-lg border border-white/30 bg-white/10 p-2 transition hover:bg-white/20"
                 >
                   {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
-                <button onClick={() => setActiveAlert(null)} className="rounded-lg border border-white/30 bg-white/10 p-2 transition hover:bg-white/20" aria-label="Dismiss alert">
+                <button onClick={() => setActiveAlert(null)} className="rounded-lg border border-white/30 bg-white/10 p-2 transition hover:bg-white/20" aria-label={t("common.close")}>
                   <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
             <div className="px-8 py-7">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Affected area</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{t("hw.affectedArea")}</p>
               <p className="mt-1 text-2xl font-bold text-slate-900">{activeAlert.area}</p>
 
               <div className="mt-5 grid grid-cols-2 gap-4">
                 <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-red-700">Current reading</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-red-700">{t("hw.currentReading")}</p>
                   <p className="mt-1 text-4xl font-bold tabular-nums text-[#DC2626]">
                     {sensors.find((s) => s.id === activeAlert.sensorId)?.readings.slice(-1)[0]?.value.toFixed(1) ?? "—"} °C
                   </p>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Trend</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.trend")}</p>
                   <p className="mt-1 text-4xl font-bold tabular-nums text-[#C2410C]">
                     +{(deltaOf(sensors.find((s) => s.id === activeAlert.sensorId) ?? sensors[0])).toFixed(1)} °C
                   </p>
-                  <p className="text-[11px] text-slate-500">over {day} simulated days</p>
+                  <p className="text-[11px] text-slate-500">{t("hw.overDays", { n: day })}</p>
                 </div>
               </div>
 
               <div className="mt-5 rounded-xl border-l-4 border-[#DC2626] bg-red-50/60 px-4 py-3">
-                <p className="text-sm font-bold uppercase tracking-wide text-[#DC2626]">Persistent temperature rise detected</p>
+                <p className="text-sm font-bold uppercase tracking-wide text-[#DC2626]">{t("hw.persistentTempRise")}</p>
                 <p className="mt-1 text-xs leading-relaxed text-slate-700">
-                  The monitoring system has detected a sustained multi-day upward temperature trend in this area. Threshold-based single-reading checks would not have flagged this event.
+                  {t("hw.persistentTempRiseNote")}
                 </p>
               </div>
 
               <div className="mt-4 flex items-center justify-between text-[11px] text-slate-500">
-                <span>Sensor: <span className="font-mono font-semibold text-slate-800">{activeAlert.sensorId}</span> · Simulated time: <span className="font-semibold text-slate-800">{activeAlert.clock}</span></span>
-                <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#DC2626]">Active</span>
+                <span>
+                  {t("hw.sensor")}: <span className="font-mono font-semibold text-slate-800">{activeAlert.sensorId}</span> ·{" "}
+                  {t("hw.simulatedTime")}: <span className="font-semibold text-slate-800">{activeAlert.clock}</span>
+                </span>
+                <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#DC2626]">{t("hw.active")}</span>
               </div>
             </div>
 
@@ -585,7 +597,7 @@ export default function HardwareSimulation() {
           <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Sensor detail</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.sensorDetail")}</p>
                 <p className="text-sm font-semibold text-slate-900">{selected.name}</p>
                 <p className="text-xs text-slate-500">{selected.zone}</p>
               </div>
@@ -597,44 +609,48 @@ export default function HardwareSimulation() {
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: STATE_COLOR[selected.state] }} />
                 <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: STATE_COLOR[selected.state] }}>
-                  {STATE_LABEL[selected.state]}
+                  {stateLabels[selected.state]}
                 </span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Current</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.currentReading")}</p>
                   <p className="mt-1 text-xl font-bold tabular-nums text-[#C2410C]">
                     {latestValue(selected) != null ? `${latestValue(selected)!.toFixed(1)} °C` : "—"}
                   </p>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Baseline (day 1)</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.baseline")}</p>
                   <p className="mt-1 text-xl font-bold tabular-nums text-slate-800">{selected.baseline.toFixed(1)} °C</p>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Change</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.change")}</p>
                   <p className="mt-1 text-xl font-bold tabular-nums text-[#C2410C]">+{deltaOf(selected).toFixed(1)} °C</p>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Humidity</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.humidity")}</p>
                   <p className="mt-1 text-xl font-bold tabular-nums text-slate-800">{selected.humidity}%</p>
                 </div>
               </div>
 
               <div className="mt-4">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Recent readings</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{t("hw.recentReadings")}</p>
                 <div className="mt-2 overflow-hidden rounded-lg border border-slate-200">
                   <table className="w-full text-xs">
                     <thead className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
-                      <tr><th className="px-3 py-1.5 text-left font-semibold">Day</th><th className="px-3 py-1.5 text-left font-semibold">Clock</th><th className="px-3 py-1.5 text-right font-semibold">Temp</th></tr>
+                      <tr>
+                        <th className="px-3 py-1.5 text-left font-semibold">{t("hw.day")}</th>
+                        <th className="px-3 py-1.5 text-left font-semibold">{t("hw.clock")}</th>
+                        <th className="px-3 py-1.5 text-right font-semibold">{t("hw.temp")}</th>
+                      </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {selected.readings.length === 0 && (
-                        <tr><td colSpan={3} className="px-3 py-3 text-center text-slate-400">No readings yet</td></tr>
+                        <tr><td colSpan={3} className="px-3 py-3 text-center text-slate-400">{t("hw.noReadingsYet")}</td></tr>
                       )}
                       {selected.readings.slice(-6).reverse().map((r) => (
                         <tr key={r.day}>
-                          <td className="px-3 py-1.5 text-slate-700">Day {r.day}</td>
+                          <td className="px-3 py-1.5 text-slate-700">{t("hw.day")} {r.day}</td>
                           <td className="px-3 py-1.5 text-slate-500 tabular-nums">{r.clock}</td>
                           <td className="px-3 py-1.5 text-right font-semibold tabular-nums text-slate-800">{r.value.toFixed(1)} °C</td>
                         </tr>

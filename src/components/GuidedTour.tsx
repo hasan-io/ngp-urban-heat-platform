@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ChevronLeft, ChevronRight, Keyboard, Sparkles, X } from "lucide-react";
+import { useI18n } from "@/i18n";
 import { cn } from "@/utils/cn";
 
 export interface TourStep {
@@ -31,6 +32,7 @@ export default function GuidedTour({
   onSkip: () => void;
   storageKey: string;
 }) {
+  const { t } = useI18n();
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -38,8 +40,8 @@ export default function GuidedTour({
   useEffect(() => {
     if (step === null) { setVisible(false); return; }
     setVisible(false);
-    const t = window.setTimeout(() => setVisible(true), 30);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => setVisible(true), 30);
+    return () => window.clearTimeout(timer);
   }, [step]);
 
   /* -------- measure + track the highlighted element -------- */
@@ -194,7 +196,7 @@ export default function GuidedTour({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label={`Tour step ${step + 1} of ${steps.length}`}
+          aria-label={t("common.stepOf", { n: step + 1, total: steps.length })}
           className={cn(
             "overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.22)] transition-all duration-200 ease-out",
             visible ? "scale-100 opacity-100" : "translate-y-1 scale-[0.98] opacity-0",
@@ -216,12 +218,12 @@ export default function GuidedTour({
                   {step + 1}
                 </span>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  Step {step + 1} of {steps.length}
+                  {t("common.stepOf", { n: step + 1, total: steps.length })}
                 </p>
               </div>
               <button
                 onClick={complete}
-                aria-label="Close tour"
+                aria-label={t("common.close")}
                 className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
               >
                 <X className="h-3.5 w-3.5" />
@@ -265,10 +267,10 @@ export default function GuidedTour({
                 <kbd className="rounded border border-slate-200 bg-slate-50 px-1 font-mono text-[9px] text-slate-600">←</kbd>
                 <span>/</span>
                 <kbd className="rounded border border-slate-200 bg-slate-50 px-1 font-mono text-[9px] text-slate-600">→</kbd>
-                <span>navigate</span>
+                <span>{t("common.next")}</span>
                 <span className="mx-0.5">·</span>
                 <kbd className="rounded border border-slate-200 bg-slate-50 px-1 font-mono text-[9px] text-slate-600">Esc</kbd>
-                <span>skip</span>
+                <span>{t("common.skip")}</span>
               </span>
             </div>
 
@@ -278,7 +280,7 @@ export default function GuidedTour({
                 onClick={complete}
                 className="text-xs font-medium text-slate-500 transition hover:text-slate-800"
               >
-                Skip tour
+                {t("common.skip")}
               </button>
               <div className="flex items-center gap-2">
                 <button
@@ -287,13 +289,13 @@ export default function GuidedTour({
                   className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft className="h-3 w-3" />
-                  Back
+                  {t("common.back")}
                 </button>
                 <button
                   onClick={last ? complete : onNext}
                   className="flex items-center gap-1 rounded-lg bg-[#FF6B35] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#e85a28]"
                 >
-                  {last ? "Finish" : "Next"}
+                  {last ? t("common.finish") : t("common.next")}
                   {!last && <ChevronRight className="h-3 w-3" />}
                 </button>
               </div>
