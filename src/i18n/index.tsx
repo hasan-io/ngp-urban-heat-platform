@@ -13,7 +13,6 @@ const LS_KEY = "nagpur-uhi.lang";
 interface I18nContextValue {
   lang: Lang;
   setLang: (l: Lang) => void;
-  /** Translate a key, with optional `{name}` placeholder substitution. */
   t: (key: TranslationKey, vars?: Record<string, string | number>) => string;
 }
 
@@ -40,7 +39,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try { localStorage.setItem(LS_KEY, lang); } catch { /* ignore */ }
-    // Reflect the language on the document for accessibility tools / fonts.
     try { document.documentElement.lang = lang; } catch { /* ignore */ }
   }, [lang]);
 

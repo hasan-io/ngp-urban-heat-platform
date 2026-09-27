@@ -83,7 +83,7 @@ export default function Overview() {
                 <KPI
                   label={t("home.avgTemperature")}
                   value={fmt.temp(kpis.averageTemperature)}
-                  sub={`${fmt.delta(kpis.averageTemperature - c19.lstMean, 1, "°C")} ${t("home.vs2019")}`}
+                  sub={`${fmt.delta(kpis.averageTemperature - c19.lstMean, 1, "°C")} ${t("common.vs2019")}`}
                   tone="hot"
                   icon={<Flame className="h-4 w-4 text-orange-500" />}
                 />
@@ -265,7 +265,7 @@ export default function Overview() {
           <Card
             title={t("home.landSurfaceTemperature", { year })}
             subtitle={t("home.mapSubtitle")}
-            right={<Pill tone="orange">{fmt.temp(c.lstMean)} {t("home.mean")}</Pill>}
+            right={<Pill tone="orange">{fmt.temp(c.lstMean)} {t("common.mean")}</Pill>}
             bodyClassName="p-4"
           >
             <HomeMap />

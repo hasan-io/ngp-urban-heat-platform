@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/utils/cn";
 import { RAMPS, rampGradient, type LayerKey } from "@/data/colors";
 import { YEARS, type Year } from "@/data/nagpur";
+import { useI18n, type TranslationKey } from "@/i18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Card                                                                      */
@@ -13,7 +14,6 @@ export function Card({ title, subtitle, right, children, className, bodyClassNam
     <section
       className={cn(
         "rounded-xl border border-slate-200 bg-white",
-        // Design system: shadow 0 2px 8px rgba(0,0,0,0.08), hover 0 4px 12px, smooth 0.2s
         "shadow-[0_2px_8px_rgba(15,23,42,0.08)] transition-shadow duration-200 ease-out hover:shadow-[0_4px_12px_rgba(15,23,42,0.12)]",
         className,
       )}
@@ -66,7 +66,6 @@ export function KPI({ label, value, sub, tone = "neutral", icon }: {
 
 /* -------------------------------------------------------------------------- */
 /*  SectionHeader — 4px orange left border + light background                 */
-/*  Applied on Index Analysis and any numbered section.                       */
 /* -------------------------------------------------------------------------- */
 export function SectionHeader({ n, title, purpose, why, children }: {
   n: number; title: string; purpose: string; why: string; children?: ReactNode;
@@ -91,24 +90,39 @@ export function SectionHeader({ n, title, purpose, why, children }: {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Legend — clean readable gradient with tick marks                          */
+/*  Legend — translated labels, clean readable gradient with tick marks       */
 /* -------------------------------------------------------------------------- */
+
+/** Maps every raster LayerKey to its translation key for the legend title. */
+const LEGEND_KEY: Record<LayerKey, TranslationKey> = {
+  lst: "legend.lst",
+  ndvi: "legend.ndvi",
+  ndbi: "legend.ndbi",
+  dlst: "legend.dlst",
+  dndvi: "legend.ndvi",
+  dndbi: "legend.ndbi",
+  hotspot: "legend.hotspot",
+  scenario: "legend.lst",
+  cluster: "legend.cluster",
+};
+
 export function Legend({ layer, className, compact }: { layer: LayerKey; className?: string; compact?: boolean }) {
+  const { t } = useI18n();
   const r = RAMPS[layer];
+  const label = t(LEGEND_KEY[layer] ?? "legend.lst");
   return (
     <div className={cn("text-xs text-slate-600", className)}>
-      {!compact && <p className="mb-2 font-semibold text-slate-700">{r.label}</p>}
+      {!compact && <p className="mb-2 font-semibold text-slate-700">{label}</p>}
       <div className="h-2.5 w-full rounded-full shadow-sm ring-1 ring-slate-200" style={{ background: rampGradient(layer) }} />
       <div className="relative mt-1.5">
-        {/* Tick marks at labeled intervals */}
         <div className="absolute -top-[3px] left-0 right-0 flex justify-between">
-          {r.ticks.map((t) => (
-            <span key={t} className="h-1.5 w-px bg-slate-400/70" aria-hidden />
+          {r.ticks.map((tk) => (
+            <span key={tk} className="h-1.5 w-px bg-slate-400/70" aria-hidden />
           ))}
         </div>
         <div className="flex justify-between pt-1 tabular-nums text-[11px] font-medium text-slate-600">
-          {r.ticks.map((t) => (
-            <span key={t}>{t}{r.unit}</span>
+          {r.ticks.map((tk) => (
+            <span key={tk}>{tk}{r.unit}</span>
           ))}
         </div>
       </div>
@@ -131,7 +145,6 @@ export function Pill({ children, tone = "slate", className }: {
     amber: "bg-amber-50 text-amber-700 border-amber-200",
     violet: "bg-violet-50 text-violet-700 border-violet-200",
     sky: "bg-sky-50 text-sky-700 border-sky-200",
-    // Orange uses the primary accent tone exactly
     orange: "bg-orange-50 text-[#C2410C] border-orange-200",
   };
   return (
@@ -142,7 +155,7 @@ export function Pill({ children, tone = "slate", className }: {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Segmented — selected state is always orange (#FF6B35)                     */
+/*  Segmented                                                                 */
 /* -------------------------------------------------------------------------- */
 export function Segmented<T extends string | number>({ options, value, onChange, size = "sm" }: {
   options: { value: T; label: ReactNode }[]; value: T; onChange: (v: T) => void; size?: "sm" | "xs";
@@ -208,7 +221,7 @@ export function Stat({ label, value, tone }: { label: ReactNode; value: ReactNod
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Formula — monospace chip                                                  */
+/*  Formula                                                                   */
 /* -------------------------------------------------------------------------- */
 export function Formula({ children }: { children: ReactNode }) {
   return (
@@ -219,7 +232,7 @@ export function Formula({ children }: { children: ReactNode }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Chart theme — soft grid lines (#e2e8f0), readable axis, light tooltip     */
+/*  Chart theme                                                               */
 /* -------------------------------------------------------------------------- */
 export const chartTheme = {
   grid: "#e2e8f0",
