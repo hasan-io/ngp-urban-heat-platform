@@ -22,7 +22,7 @@ import type { InsightsResponse, ReportResponse, ScatterResponse, TrendResponse, 
 import { cn } from "@/utils/cn";
 
 const TOUR_KEY = "nagpur-uhi.insights-tour-v1";
-const VOICE_MODULE_URL = "https://nagpur-netra-voice-module.vercel.app/";
+const VOICE_MODULE_URL = "https://pixel-perfect-canvas-8851.lovable.app/";
 const INSIGHTS_TOUR: TourStep[] = [
   { target: "insights-findings", text: "Start with the key findings: a short reading of heat exposure, vegetation and built-up change for the selected season." },
   { target: "insights-rankings", text: "Compare priority zones by mean and peak temperature, persistence, area and severity." },
