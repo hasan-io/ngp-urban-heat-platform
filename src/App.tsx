@@ -9,11 +9,12 @@ import Overview from "@/views/Overview";
 import ScenarioLab from "@/views/ScenarioLab";
 import Explore from "@/views/Explore";
 import Insights from "@/views/Insights";
-import HardwareSimulation from "@/views/HardwareSimulation";
 import type { AreaKey } from "@/data/boundaries";
 import { getDistrictDataset } from "@/data/districts";
 
+// Heavy pages are lazy-loaded so their module trees don't run on Home / Explore.
 const Methodology = lazy(() => import("@/views/Methodology"));
+const HardwareSimulation = lazy(() => import("@/views/HardwareSimulation"));
 
 export type UhiLayer = "lst" | "ndvi" | "ndbi" | "dlst" | "hotspot" | "islands" | "outlook";
 export type Basemap = "dark" | "streets" | "satellite";

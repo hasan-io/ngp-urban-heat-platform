@@ -4,10 +4,12 @@
 export const YEARS = [2019, 2020, 2021, 2022, 2023, 2024] as const;
 export type Year = (typeof YEARS)[number];
 
-// Nagpur district full extent (derived from geoBoundaries ADM2 polygon).
-// Expanded from the previous 29 × 27 km city AOI to cover the entire district.
-export const BOUNDS = { south: 20.86, north: 21.78, west: 78.56, east: 79.60 };
-export const GRID = { w: 320, h: 300 }; // ~340 m cells across the district
+// Original tight AOI — features are tuned for this extent.
+export const BOUNDS = { south: 21.02, north: 21.26, west: 78.94, east: 79.22 };
+// 80 × 72 = 5,760 cells. The synthetic generator runs synchronously on App
+// mount; this keeps it well inside the browser's main-thread budget even on
+// a deployed production build. Still crisp at the AOI scale used by every card.
+export const GRID = { w: 80, h: 72 };
 export const KM_PER_DEG_LAT = 111.0;
 export const KM_PER_DEG_LON = 104.0; // at ~21°N
 export const CELL_AREA_KM2 =
@@ -38,7 +40,6 @@ export const FORESTS: Ellipse[] = [
   { name: "Umred Rd groves", lat: 21.058, lon: 79.175, rx: 2.0, ry: 1.4, rot: 15, s: 0.5 },
   { name: "Koradi lake belt", lat: 21.238, lon: 79.125, rx: 1.3, ry: 0.9, s: 0.5 },
   { name: "Wanadongri farms", lat: 21.11, lon: 78.945, rx: 1.4, ry: 1.0, s: 0.45 },
-  // Rural belts added to cover the expanded district extent.
   { name: "Ramtek forest belt", lat: 21.40, lon: 79.33, rx: 6.0, ry: 4.0, s: 0.6 },
   { name: "Umred east forests", lat: 20.95, lon: 79.35, rx: 5.5, ry: 4.5, s: 0.55 },
   { name: "Kalmeshwar scrub", lat: 21.28, lon: 78.85, rx: 5.0, ry: 3.5, s: 0.5 },
@@ -56,7 +57,6 @@ export const LAKES: Ellipse[] = [
   { name: "Sakkardara Lake", lat: 21.125, lon: 79.108, rx: 0.2, ry: 0.18 },
   { name: "Naik Talao", lat: 21.155, lon: 79.112, rx: 0.15, ry: 0.14 },
   { name: "Koradi Lake", lat: 21.247, lon: 79.098, rx: 0.75, ry: 0.4, rot: -10 },
-  // Rural water bodies added to match the expanded extent.
   { name: "Wena Lake", lat: 21.28, lon: 79.15, rx: 0.6, ry: 0.4 },
   { name: "Ramtek Lake", lat: 21.40, lon: 79.33, rx: 0.5, ry: 0.35 },
   { name: "Umred tank", lat: 20.85, lon: 79.33, rx: 0.4, ry: 0.3 },
@@ -76,8 +76,8 @@ export const URBAN_CORES: Ellipse[] = [
 ];
 
 export interface Industrial extends Ellipse {
-  heat: number; // extra LST °C
-  growth?: number; // growth factor 0..1 over the period
+  heat: number;
+  growth?: number;
 }
 
 export const INDUSTRIAL: Industrial[] = [
@@ -92,7 +92,7 @@ export const INDUSTRIAL: Industrial[] = [
 export const AIRPORT: Ellipse = { name: "Dr. Babasaheb Ambedkar Intl. Airport", lat: 21.092, lon: 79.049, rx: 1.7, ry: 0.55, rot: -50, s: 1 };
 
 export interface GrowthZone extends Ellipse {
-  base: number; // built fraction already present in 2019 (fraction of final)
+  base: number;
 }
 
 export const GROWTH_ZONES: GrowthZone[] = [
@@ -115,8 +115,8 @@ export type LatLon = [number, number];
 export interface Road {
   name: string;
   pts: LatLon[];
-  s: number; // built strength
-  w: number; // half width km
+  s: number;
+  w: number;
 }
 
 export const ROADS: Road[] = [
@@ -156,8 +156,8 @@ export interface Zone {
   id: string;
   name: string;
   short: string;
-  poly: LatLon[]; // lat, lon
-  population: number; // approx residents
+  poly: LatLon[];
+  population: number;
   character: string;
 }
 
@@ -205,7 +205,6 @@ export const LANDMARKS: Landmark[] = [
   { name: "Manish Nagar", lat: 21.09, lon: 79.075, kind: "growth" },
 ];
 
-// Inter-annual anomalies (pre-monsoon composites). Positive LST = hotter season.
 export const YEAR_ANOMALY: Record<Year, { lst: number; ndvi: number; note: string }> = {
   2019: { lst: 0.6, ndvi: -0.02, note: "Severe heat-wave; Nagpur crossed 47°C in May" },
   2020: { lst: -0.45, ndvi: 0.015, note: "Good 2019 monsoon carry-over; lockdown haze" },
@@ -215,7 +214,7 @@ export const YEAR_ANOMALY: Record<Year, { lst: number; ndvi: number; note: strin
   2024: { lst: 0.75, ndvi: -0.015, note: "Prolonged May heat spell (45–46°C)" },
 };
 
-export const LST_TREND_PER_YEAR = 0.18; // background warming + densification °C/yr
+export const LST_TREND_PER_YEAR = 0.18;
 
 export const CLASSES_NDVI = [
   { key: "water", label: "Water", min: -1, max: 0.0, color: "#38bdf8" },
