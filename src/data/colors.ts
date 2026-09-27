@@ -55,8 +55,7 @@ export const RAMPS: Record<LayerKey, Ramp> = {
     stops: [{ t: 0, c: hex("#0e7490") }, { t: 0.5, c: hex("#f8fafc") }, { t: 1, c: hex("#7e22ce") }],
     unit: "", label: "Δ NDBI", ticks: [-0.3, -0.15, 0, 0.15, 0.3],
   },
-  // FIXED: persistence ramp no longer starts at #0f172a (dark slate).
-  // 0 yrs → cool pale blue, 6 yrs → deep risk red. Fits the light scientific theme.
+  // Persistence ramp: 0 yrs → cool pale blue, 6 yrs → deep risk red. Fits the light scientific theme.
   hotspot: {
     domain: [0, 6],
     stops: [
@@ -110,12 +109,26 @@ export function rampGradient(key: LayerKey): string {
   return `linear-gradient(90deg, ${r.stops.map((s) => `${rgbCss(s.c)} ${(s.t * 100).toFixed(0)}%`).join(", ")})`;
 }
 
-/** Render a raster into ImageData. Water is painted a fixed light-blue unless the layer is a delta layer. */
+/**
+ * Render a raster into ImageData. Water is painted a fixed light-blue unless the layer is a delta layer.
+ *
+ * NEW: `opts.mask` — optional per-cell Uint8Array. Cells where mask[i] === 0 become fully
+ * transparent, so the raster PNG itself is clipped to an administrative polygon.
+ * This is used by MapView for area-boundary clipping without changing the heatmap colors,
+ * legend, or any other visual logic.
+ */
 export function rasterToImageData(
   ds: Dataset,
   values: Float32Array | Uint8Array,
   key: LayerKey,
-  opts: { alpha?: number; waterColor?: RGB | null; highlight?: (i: number) => number; palette?: string[] } = {},
+  opts: {
+    alpha?: number;
+    waterColor?: RGB | null;
+    highlight?: (i: number) => number;
+    palette?: string[];
+    /** Optional per-cell mask: cells where mask[i] === 0 become fully transparent. */
+    mask?: Uint8Array;
+  } = {},
 ): ImageData {
   const img = new ImageData(ds.w, ds.h);
   const d = img.data;
@@ -127,8 +140,11 @@ export function rasterToImageData(
     if (ds.water[i] && waterColor) c = waterColor;
     else if (opts.palette) c = paletteColor(opts.palette, values[i]);
     else c = rampColor(key, values[i]);
+
     let a = alpha;
     if (opts.highlight) a = Math.round(a * opts.highlight(i));
+    if (opts.mask && opts.mask[i] === 0) a = 0; // clip to boundary
+
     const o = i * 4;
     d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = a;
   }

@@ -4,8 +4,10 @@
 export const YEARS = [2019, 2020, 2021, 2022, 2023, 2024] as const;
 export type Year = (typeof YEARS)[number];
 
-export const BOUNDS = { south: 21.02, north: 21.26, west: 78.94, east: 79.22 };
-export const GRID = { w: 140, h: 120 }; // ~200 m analysis cells
+// Nagpur district full extent (derived from geoBoundaries ADM2 polygon).
+// Expanded from the previous 29 × 27 km city AOI to cover the entire district.
+export const BOUNDS = { south: 20.86, north: 21.78, west: 78.56, east: 79.60 };
+export const GRID = { w: 320, h: 300 }; // ~340 m cells across the district
 export const KM_PER_DEG_LAT = 111.0;
 export const KM_PER_DEG_LON = 104.0; // at ~21°N
 export const CELL_AREA_KM2 =
@@ -36,6 +38,13 @@ export const FORESTS: Ellipse[] = [
   { name: "Umred Rd groves", lat: 21.058, lon: 79.175, rx: 2.0, ry: 1.4, rot: 15, s: 0.5 },
   { name: "Koradi lake belt", lat: 21.238, lon: 79.125, rx: 1.3, ry: 0.9, s: 0.5 },
   { name: "Wanadongri farms", lat: 21.11, lon: 78.945, rx: 1.4, ry: 1.0, s: 0.45 },
+  // Rural belts added to cover the expanded district extent.
+  { name: "Ramtek forest belt", lat: 21.40, lon: 79.33, rx: 6.0, ry: 4.0, s: 0.6 },
+  { name: "Umred east forests", lat: 20.95, lon: 79.35, rx: 5.5, ry: 4.5, s: 0.55 },
+  { name: "Kalmeshwar scrub", lat: 21.28, lon: 78.85, rx: 5.0, ry: 3.5, s: 0.5 },
+  { name: "Kuhi farmland", lat: 21.05, lon: 79.35, rx: 6.5, ry: 5.0, s: 0.45 },
+  { name: "Parseoni hills", lat: 21.45, lon: 79.15, rx: 4.5, ry: 3.5, s: 0.55 },
+  { name: "Narkhed belt", lat: 21.45, lon: 78.75, rx: 5.0, ry: 4.0, s: 0.5 },
 ];
 
 export const LAKES: Ellipse[] = [
@@ -47,6 +56,10 @@ export const LAKES: Ellipse[] = [
   { name: "Sakkardara Lake", lat: 21.125, lon: 79.108, rx: 0.2, ry: 0.18 },
   { name: "Naik Talao", lat: 21.155, lon: 79.112, rx: 0.15, ry: 0.14 },
   { name: "Koradi Lake", lat: 21.247, lon: 79.098, rx: 0.75, ry: 0.4, rot: -10 },
+  // Rural water bodies added to match the expanded extent.
+  { name: "Wena Lake", lat: 21.28, lon: 79.15, rx: 0.6, ry: 0.4 },
+  { name: "Ramtek Lake", lat: 21.40, lon: 79.33, rx: 0.5, ry: 0.35 },
+  { name: "Umred tank", lat: 20.85, lon: 79.33, rx: 0.4, ry: 0.3 },
 ];
 
 export const URBAN_CORES: Ellipse[] = [
